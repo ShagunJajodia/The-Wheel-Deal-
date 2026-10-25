@@ -7,6 +7,7 @@ from app.api.dependencies import get_current_user, require_admin
 from app.db.session import get_db
 from app.models.user import User
 from app.schemas.vehicle import (
+    MAX_VEHICLE_ID,
     VehicleCreate,
     VehiclePurchase,
     VehicleRead,
@@ -28,7 +29,7 @@ from app.services.vehicle import (
 router = APIRouter()
 
 # Postgres INTEGER range; anything else cannot exist and would otherwise surface as a 500.
-VehicleId = Annotated[int, Path(ge=1, le=2_147_483_647)]
+VehicleId = Annotated[int, Path(ge=1, le=MAX_VEHICLE_ID)]
 
 
 @router.post("", response_model=VehicleRead, status_code=status.HTTP_201_CREATED)
