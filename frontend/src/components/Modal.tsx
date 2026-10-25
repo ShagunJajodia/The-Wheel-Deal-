@@ -87,7 +87,7 @@ export function Modal({ title, onClose, children, role = "dialog", variant = "di
         onKeyDown={trapTab}
         className={
           sheet
-            ? "h-full w-full max-w-3xl overflow-y-auto bg-white shadow-2xl outline-none sm:h-auto sm:max-h-[92vh] sm:rounded-2xl dark:bg-stone-900 dark:sm:border dark:sm:border-stone-800"
+            ? "h-full w-full max-w-3xl overflow-y-auto bg-white shadow-2xl lg:max-w-6xl outline-none sm:h-auto sm:max-h-[92vh] sm:rounded-2xl dark:bg-stone-900 dark:sm:border dark:sm:border-stone-800"
             : "max-h-full w-full max-w-lg overflow-y-auto rounded-t-3xl bg-white p-6 shadow-2xl outline-none sm:rounded-2xl dark:border dark:border-stone-800 dark:bg-stone-900"
         }
       >

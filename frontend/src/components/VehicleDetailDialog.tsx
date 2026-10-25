@@ -207,7 +207,9 @@ export function VehicleDetailDialog({
 
   return (
     <Modal title={`${vehicle.year} ${vehicle.make} ${vehicle.model}`} onClose={onClose} variant="sheet">
-      <div className="relative aspect-video overflow-hidden bg-stone-200 sm:rounded-t-2xl dark:bg-stone-800">
+      {/* Wide screens: photo pinned on the left, details and specs scroll on the right. */}
+      <div className="lg:grid lg:grid-cols-[1.15fr_1fr] lg:items-start">
+      <div className="relative aspect-video overflow-hidden bg-stone-200 sm:rounded-t-2xl lg:sticky lg:top-0 lg:aspect-[4/3] lg:rounded-tr-none lg:rounded-bl-2xl dark:bg-stone-800">
         {vehicle.image_url && !imageFailed ? (
           <img
             src={vehicle.image_url}
@@ -226,7 +228,7 @@ export function VehicleDetailDialog({
 
       <div className="space-y-6 p-5 sm:p-6">
         <div>
-          <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center justify-between gap-3 lg:pr-12">
             <p className="text-sm font-medium text-stone-500 dark:text-stone-400">
               {vehicle.year} · {vehicle.make}
             </p>
@@ -256,7 +258,7 @@ export function VehicleDetailDialog({
             Specifications
           </h4>
           {hasSpecs(vehicle) ? (
-            <dl className="mt-3 grid grid-cols-2 gap-3 md:grid-cols-3">
+            <dl className="mt-3 grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-2">
               {tiles.map((tile) => (
                 <div key={tile.label} className="min-w-0 rounded-xl border border-stone-200 bg-stone-100 p-3.5 dark:border-stone-700 dark:bg-stone-800">
                   <dt className="flex items-center gap-2 text-xs font-medium text-stone-600 dark:text-stone-400">
@@ -271,6 +273,7 @@ export function VehicleDetailDialog({
             <p className="mt-2 text-sm text-stone-600 dark:text-stone-400">Specifications coming soon.</p>
           )}
         </section>
+      </div>
       </div>
 
       <div className="sticky bottom-0 space-y-3 border-t border-stone-200 bg-white p-4 sm:px-6 dark:border-stone-800 dark:bg-stone-900">
