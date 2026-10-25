@@ -75,12 +75,26 @@ def test_register_rejects_duplicate_email_case_insensitively(
     "payload",
     [
         registration_payload(email="not-an-email"),
+        registration_payload(email="a@b..c"),
+        registration_payload(email="a..b@example.com"),
+        registration_payload(email="a@-example.com"),
+        registration_payload(email="a@example.com."),
         registration_payload(password="short"),
         {"full_name": "Test Driver", "password": "a-strong-password"},
         {"email": "driver@example.com", "password": "a-strong-password"},
         {"email": "driver@example.com", "full_name": "Test Driver"},
     ],
-    ids=["bad-email", "short-password", "missing-email", "missing-name", "missing-password"],
+    ids=[
+        "bad-email",
+        "consecutive-domain-dots",
+        "consecutive-local-dots",
+        "leading-domain-hyphen",
+        "trailing-domain-dot",
+        "short-password",
+        "missing-email",
+        "missing-name",
+        "missing-password",
+    ],
 )
 def test_register_rejects_invalid_input(
     client: TestClient, db_session: Session, payload: dict[str, str]
