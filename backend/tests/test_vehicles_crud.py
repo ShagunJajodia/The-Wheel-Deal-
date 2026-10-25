@@ -46,6 +46,8 @@ def test_admin_creates_vehicle_with_exact_price_and_public_fields(
     assert set(body) == {
         "id", "make", "model", "year", "category", "price", "quantity",
         "image_url", "description", "created_at", "updated_at",
+        "fuel_type", "transmission", "engine", "power", "torque", "drivetrain",
+        "seats", "mileage", "color", "location", "stock_id",
     }
 
 
