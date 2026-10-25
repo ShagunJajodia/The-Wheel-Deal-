@@ -1,8 +1,8 @@
 import { useState } from "react";
 import type { FormEvent } from "react";
 
-import { ApiError, CATEGORIES } from "../api/client";
-import type { Category, Vehicle, VehicleUpdate } from "../api/client";
+import { ApiError, CATEGORIES, DRIVETRAINS, FUEL_TYPES } from "../api/client";
+import type { Category, Drivetrain, FuelType, Vehicle, VehicleSpecs, VehicleUpdate } from "../api/client";
 import { useVehicleMutations } from "../hooks/useVehicleMutations";
 import { mapValidationErrors } from "../lib/formErrors";
 import { FormField } from "./FormField";
@@ -18,8 +18,40 @@ const FIELDS = [
   "image_url",
   "description",
 ] as const;
-type Field = (typeof FIELDS)[number];
+const SPEC_FIELDS = [
+  "fuel_type",
+  "transmission",
+  "engine",
+  "power",
+  "torque",
+  "drivetrain",
+  "seats",
+  "mileage",
+  "color",
+  "location",
+] as const;
+type SpecField = (typeof SPEC_FIELDS)[number];
+type Field = (typeof FIELDS)[number] | SpecField;
 type Values = Record<Field, string>;
+
+const DRIVETRAIN_LABELS: Record<Drivetrain, string> = { fwd: "FWD", rwd: "RWD", awd: "AWD", "4wd": "4WD" };
+const FUEL_LABELS: Record<FuelType, string> = {
+  petrol: "Petrol",
+  diesel: "Diesel",
+  electric: "Electric",
+  hybrid: "Hybrid",
+  cng: "CNG",
+};
+
+const TEXT_SPECS: Array<{ name: Exclude<SpecField, "fuel_type" | "drivetrain" | "seats">; label: string }> = [
+  { name: "transmission", label: "Transmission" },
+  { name: "engine", label: "Engine" },
+  { name: "power", label: "Power" },
+  { name: "torque", label: "Torque" },
+  { name: "mileage", label: "Mileage / range" },
+  { name: "color", label: "Colour" },
+  { name: "location", label: "Location" },
+];
 type Errors = Partial<Record<Field, string>>;
 
 function initialValues(vehicle?: Vehicle): Values {
@@ -32,7 +64,31 @@ function initialValues(vehicle?: Vehicle): Values {
     quantity: "0",
     image_url: vehicle?.image_url ?? "",
     description: vehicle?.description ?? "",
+    fuel_type: vehicle?.fuel_type ?? "",
+    transmission: vehicle?.transmission ?? "",
+    engine: vehicle?.engine ?? "",
+    power: vehicle?.power ?? "",
+    torque: vehicle?.torque ?? "",
+    drivetrain: vehicle?.drivetrain ?? "",
+    seats: vehicle?.seats == null ? "" : String(vehicle.seats),
+    mileage: vehicle?.mileage ?? "",
+    color: vehicle?.color ?? "",
+    location: vehicle?.location ?? "",
   };
+}
+
+/**
+ * The spec keys to send. A blank field is left out, except on edit when the car already had a
+ * value there: then an explicit null clears it (PUT treats null as "remove").
+ */
+function specPayload(values: Values, vehicle?: Vehicle): VehicleSpecs {
+  const payload: Record<string, unknown> = {};
+  for (const field of SPEC_FIELDS) {
+    const raw = values[field].trim();
+    if (raw !== "") payload[field] = field === "seats" ? Number(raw) : raw;
+    else if (vehicle && vehicle[field] != null) payload[field] = null;
+  }
+  return payload as VehicleSpecs;
 }
 
 function validate(values: Values, creating: boolean): Errors {
@@ -45,6 +101,10 @@ function validate(values: Values, creating: boolean): Errors {
   }
   if (!/^\d+(\.\d{1,2})?$/.test(values.price.trim()) || Number(values.price) <= 0) {
     errors.price = "Enter a price above 0, with at most 2 decimals.";
+  }
+  const seats = values.seats.trim();
+  if (seats !== "" && (!/^\d+$/.test(seats) || Number(seats) < 1 || Number(seats) > 12)) {
+    errors.seats = "Enter a whole number from 1 to 12.";
   }
   if (creating) {
     const quantity = Number(values.quantity);
@@ -91,6 +151,7 @@ export function VehicleFormDialog({ vehicle, onClose, onSaved }: VehicleFormDial
       price: values.price.trim(),
       image_url: values.image_url.trim() || null,
       description: values.description.trim() || null,
+      ...specPayload(values, vehicle),
     };
     const label = `${details.year} ${details.make} ${details.model}`;
 
@@ -104,7 +165,7 @@ export function VehicleFormDialog({ vehicle, onClose, onSaved }: VehicleFormDial
       }
       onClose();
     } catch (error) {
-      const mapped = mapValidationErrors(error, FIELDS);
+      const mapped = mapValidationErrors(error, [...FIELDS, ...SPEC_FIELDS]);
       setErrors(mapped.fields);
       if (mapped.other.length > 0) {
         setFormError(mapped.other.join("; "));
@@ -220,6 +281,74 @@ export function VehicleFormDialog({ vehicle, onClose, onSaved }: VehicleFormDial
             />
           )}
         </FormField>
+
+        <fieldset className="space-y-4 border-t border-stone-200 pt-4">
+          <legend className="pr-2 text-sm font-bold text-stone-900">Specifications</legend>
+          <p className="-mt-2 text-xs text-stone-500">Optional. Leave a field blank to leave it out.</p>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <FormField label="Fuel type" name="fuel_type" error={errors.fuel_type}>
+              {(control) => (
+                <select
+                  {...control}
+                  value={values.fuel_type}
+                  onChange={(event) => change("fuel_type", event.target.value)}
+                  className="input"
+                >
+                  <option value="">Not set</option>
+                  {FUEL_TYPES.map((fuel) => (
+                    <option key={fuel} value={fuel}>
+                      {FUEL_LABELS[fuel]}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </FormField>
+            <FormField label="Drivetrain" name="drivetrain" error={errors.drivetrain}>
+              {(control) => (
+                <select
+                  {...control}
+                  value={values.drivetrain}
+                  onChange={(event) => change("drivetrain", event.target.value)}
+                  className="input"
+                >
+                  <option value="">Not set</option>
+                  {DRIVETRAINS.map((drivetrain) => (
+                    <option key={drivetrain} value={drivetrain}>
+                      {DRIVETRAIN_LABELS[drivetrain]}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </FormField>
+            <FormField label="Seats" name="seats" error={errors.seats}>
+              {(control) => (
+                <input
+                  {...control}
+                  type="number"
+                  inputMode="numeric"
+                  min="1"
+                  max="12"
+                  value={values.seats}
+                  onChange={(event) => change("seats", event.target.value)}
+                  className="input"
+                />
+              )}
+            </FormField>
+            {TEXT_SPECS.map(({ name, label }) => (
+              <FormField key={name} label={label} name={name} error={errors[name]}>
+                {(control) => (
+                  <input
+                    {...control}
+                    value={values[name]}
+                    onChange={(event) => change(name, event.target.value)}
+                    autoComplete="off"
+                    className="input"
+                  />
+                )}
+              </FormField>
+            ))}
+          </div>
+        </fieldset>
 
         {formError && (
           <p role="alert" className="rounded-xl bg-red-50 p-3 text-sm text-red-700">

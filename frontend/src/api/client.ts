@@ -18,7 +18,27 @@ export interface User {
   role: "user" | "admin";
 }
 
-export interface Vehicle {
+export const FUEL_TYPES = ["petrol", "diesel", "electric", "hybrid", "cng"] as const;
+export type FuelType = (typeof FUEL_TYPES)[number];
+
+export const DRIVETRAINS = ["fwd", "rwd", "awd", "4wd"] as const;
+export type Drivetrain = (typeof DRIVETRAINS)[number];
+
+/** Optional showroom specifications; the API returns null for anything not recorded. */
+export interface VehicleSpecs {
+  fuel_type?: FuelType | null;
+  transmission?: string | null;
+  engine?: string | null;
+  power?: string | null;
+  torque?: string | null;
+  drivetrain?: Drivetrain | null;
+  seats?: number | null;
+  mileage?: string | null;
+  color?: string | null;
+  location?: string | null;
+}
+
+export interface Vehicle extends VehicleSpecs {
   id: number;
   make: string;
   model: string;
@@ -28,10 +48,12 @@ export interface Vehicle {
   quantity: number;
   image_url: string | null;
   description: string | null;
+  /** Read-only, assigned by the server, e.g. "WD-00013". */
+  stock_id?: string;
 }
 
-export type VehicleInput = Omit<Vehicle, "id">;
-export type VehicleUpdate = Omit<Vehicle, "id" | "quantity">;
+export type VehicleInput = Omit<Vehicle, "id" | "stock_id">;
+export type VehicleUpdate = Omit<Vehicle, "id" | "quantity" | "stock_id">;
 export type VehicleFilters = Partial<
   Record<"make" | "model" | "category" | "min_price" | "max_price", string>
 >;

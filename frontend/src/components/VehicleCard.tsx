@@ -106,9 +106,16 @@ export function VehicleCard({
         </div>
       )}
       <div className="flex flex-1 flex-col p-5">
-        <p className="text-sm font-medium text-stone-500">
-          {vehicle.year} · {vehicle.make}
-        </p>
+        <div className="flex items-center justify-between gap-3">
+          <p className="text-sm font-medium text-stone-500">
+            {vehicle.year} · {vehicle.make}
+          </p>
+          {vehicle.stock_id && (
+            <span className="rounded bg-stone-100 px-1.5 py-0.5 font-mono text-[11px] font-medium text-stone-600">
+              {vehicle.stock_id}
+            </span>
+          )}
+        </div>
         <h3 className="mt-0.5 text-xl font-bold leading-tight text-stone-950">{vehicle.model}</h3>
         <p className="mt-3 text-2xl font-bold tabular-nums text-accent-ink">{formatINR(vehicle.price)}</p>
         <div className="mb-4 mt-2 min-h-6">
