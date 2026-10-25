@@ -14,12 +14,6 @@ def max_year() -> int:
     return date.today().year + 1
 
 
-@pytest.fixture
-def http(client: TestClient) -> TestClient:
-    # Report unhandled server errors as a 500 response instead of re-raising them in the test.
-    return TestClient(client.app, raise_server_exceptions=False)
-
-
 @pytest.mark.parametrize("field", NON_NULLABLE_FIELDS)
 def test_update_rejects_explicit_null_for_required_field(
     client: TestClient, http: TestClient, admin_token: str, field: str

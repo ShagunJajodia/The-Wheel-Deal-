@@ -58,6 +58,12 @@ def client(db_session: Session) -> Iterator[TestClient]:
 
 
 @pytest.fixture
+def http(client: TestClient) -> TestClient:
+    """Like `client`, but unhandled server errors come back as 500 responses instead of raising."""
+    return TestClient(client.app, raise_server_exceptions=False)
+
+
+@pytest.fixture
 def user_token(client: TestClient) -> str:
     response = client.post(
         "/api/auth/register",
