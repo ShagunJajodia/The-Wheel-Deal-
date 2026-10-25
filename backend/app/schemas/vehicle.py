@@ -17,6 +17,24 @@ class VehicleCreate(BaseModel):
     description: str | None = None
 
 
+class VehicleUpdate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    make: str | None = Field(default=None, min_length=1, max_length=100)
+    model: str | None = Field(default=None, min_length=1, max_length=100)
+    year: int | None = None
+    category: VehicleCategory | None = None
+    price: Decimal | None = Field(default=None, gt=0, max_digits=10, decimal_places=2)
+    image_url: str | None = Field(default=None, max_length=2048)
+    description: str | None = None
+
+    @model_validator(mode="after")
+    def validate_non_empty(self) -> "VehicleUpdate":
+        if not self.model_fields_set:
+            raise ValueError("At least one field must be provided for update")
+        return self
+
+
 class VehicleRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 

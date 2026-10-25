@@ -4,7 +4,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.models.vehicle import Vehicle, VehicleCategory
-from app.schemas.vehicle import VehicleCreate
+from app.schemas.vehicle import VehicleCreate, VehicleUpdate
 
 
 def add_vehicle(db: Session, data: VehicleCreate) -> Vehicle:
@@ -42,3 +42,14 @@ def search_vehicles(
 
 def get_vehicle_by_id(db: Session, vehicle_id: int) -> Vehicle | None:
     return db.get(Vehicle, vehicle_id)
+
+
+def update_vehicle_data(_db: Session, vehicle: Vehicle, data: VehicleUpdate) -> Vehicle:
+    update_data = data.model_dump(exclude_unset=True)
+    for key, value in update_data.items():
+        setattr(vehicle, key, value)
+    return vehicle
+
+
+def remove_vehicle(db: Session, vehicle: Vehicle) -> None:
+    db.delete(vehicle)

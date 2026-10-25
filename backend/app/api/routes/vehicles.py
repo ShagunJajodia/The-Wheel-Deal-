@@ -6,12 +6,19 @@ from sqlalchemy.orm import Session
 from app.api.dependencies import get_current_user, require_admin
 from app.db.session import get_db
 from app.models.user import User
-from app.schemas.vehicle import VehicleCreate, VehicleRead, VehicleSearchParams
+from app.schemas.vehicle import (
+    VehicleCreate,
+    VehicleRead,
+    VehicleSearchParams,
+    VehicleUpdate,
+)
 from app.services.vehicle import (
     create_vehicle,
+    delete_vehicle,
     find_vehicles,
     get_vehicle,
     get_vehicles,
+    modify_vehicle,
 )
 
 router = APIRouter()
@@ -50,3 +57,22 @@ def detail(
     _user: Annotated[User, Depends(get_current_user)],
 ) -> VehicleRead:
     return get_vehicle(db, vehicle_id)
+
+
+@router.put("/{vehicle_id}", response_model=VehicleRead)
+def update(
+    vehicle_id: int,
+    data: VehicleUpdate,
+    db: Annotated[Session, Depends(get_db)],
+    _admin: Annotated[User, Depends(require_admin)],
+) -> VehicleRead:
+    return modify_vehicle(db, vehicle_id, data)
+
+
+@router.delete("/{vehicle_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete(
+    vehicle_id: int,
+    db: Annotated[Session, Depends(get_db)],
+    _admin: Annotated[User, Depends(require_admin)],
+) -> None:
+    delete_vehicle(db, vehicle_id)
