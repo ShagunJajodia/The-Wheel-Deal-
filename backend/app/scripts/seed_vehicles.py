@@ -31,9 +31,9 @@ IMAGE_URLS: dict[tuple[str, str], str] = {
         "960px-Tata_punch.ev.jpg"
     ),
     ("Tata", "Nexon EV"): (
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/0/04/"
-        "Tata_Nexon_EV_in_Hyderabad_01.jpg/"
-        "960px-Tata_Nexon_EV_in_Hyderabad_01.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/"
+        "2020_Tata_Nexon_EV_%28India%29_front_view.png/"
+        "960px-2020_Tata_Nexon_EV_%28India%29_front_view.png"
     ),
     ("Isuzu", "D-Max V-Cross"): (
         "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/"
@@ -91,9 +91,9 @@ IMAGE_URLS: dict[tuple[str, str], str] = {
         "960px-Hyundai_i20_%28BC3%29_Facelift_1X7A1941.jpg"
     ),
     ("Maruti Suzuki", "Swift"): (
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e7/"
-        "2024_Suzuki_Swift.jpg/"
-        "960px-2024_Suzuki_Swift.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/"
+        "Suzuki_Swift_%282024%29_hybrid_DSC_7921.jpg/"
+        "960px-Suzuki_Swift_%282024%29_hybrid_DSC_7921.jpg"
     ),
 }
 

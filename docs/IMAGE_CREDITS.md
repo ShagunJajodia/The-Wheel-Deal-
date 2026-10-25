@@ -6,7 +6,7 @@ The seeded vehicle photos are hotlinked from Wikimedia Commons, not stored in th
 | --- | --- | --- |
 | MG ZS EV | [MG_ZS_EV_Facelift_1X7A5867.jpg](https://commons.wikimedia.org/wiki/File:MG_ZS_EV_Facelift_1X7A5867.jpg) | CC BY-SA 4.0 |
 | Tata Punch EV | [Tata_punch.ev.jpg](https://commons.wikimedia.org/wiki/File:Tata_punch.ev.jpg) | CC0 |
-| Tata Nexon EV | [Tata_Nexon_EV_in_Hyderabad_01.jpg](https://commons.wikimedia.org/wiki/File:Tata_Nexon_EV_in_Hyderabad_01.jpg) | CC BY-SA 4.0 |
+| Tata Nexon EV | [2020_Tata_Nexon_EV_(India)_front_view.png](https://commons.wikimedia.org/wiki/File:2020_Tata_Nexon_EV_(India)_front_view.png) | CC BY 3.0 |
 | Isuzu D-Max V-Cross | [2023_Isuzu_D-Max_V-Cross_4-Door_3.0_Ddi_M.jpg](https://commons.wikimedia.org/wiki/File:2023_Isuzu_D-Max_V-Cross_4-Door_3.0_Ddi_M.jpg) | CC BY-SA 4.0 |
 | Toyota Hilux | [Toyota_HiLux_GR_Sport_1X7A7281.jpg](https://commons.wikimedia.org/wiki/File:Toyota_HiLux_GR_Sport_1X7A7281.jpg) | CC BY-SA 4.0 |
 | MINI Cooper S Convertible | [Mini_Cabrio_(F67)_JCW-Trim_DSC_7514.jpg](https://commons.wikimedia.org/wiki/File:Mini_Cabrio_(F67)_JCW-Trim_DSC_7514.jpg) | CC BY-SA 4.0 |
@@ -18,4 +18,4 @@ The seeded vehicle photos are hotlinked from Wikimedia Commons, not stored in th
 | Skoda Slavia | [2021_Škoda_Slavia_1.5_TSI_Style_(India)_front_view.png](https://commons.wikimedia.org/wiki/File:2021_%C5%A0koda_Slavia_1.5_TSI_Style_(India)_front_view.png) | CC BY 3.0 |
 | Honda City | [2023_Honda_City_RS.jpg](https://commons.wikimedia.org/wiki/File:2023_Honda_City_RS.jpg) | CC BY-SA 4.0 |
 | Hyundai i20 | [Hyundai_i20_(BC3)_Facelift_1X7A1941.jpg](https://commons.wikimedia.org/wiki/File:Hyundai_i20_(BC3)_Facelift_1X7A1941.jpg) | CC BY-SA 4.0 |
-| Maruti Suzuki Swift | [2024_Suzuki_Swift.jpg](https://commons.wikimedia.org/wiki/File:2024_Suzuki_Swift.jpg) | CC BY-SA 4.0 |
+| Maruti Suzuki Swift | [Suzuki_Swift_(2024)_hybrid_DSC_7921.jpg](https://commons.wikimedia.org/wiki/File:Suzuki_Swift_(2024)_hybrid_DSC_7921.jpg) | CC BY-SA 4.0 |
