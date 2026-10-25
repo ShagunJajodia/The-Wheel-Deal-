@@ -11,7 +11,7 @@ export interface VehicleCardAdmin {
 }
 
 /** Quiet line-art placeholder for vehicles without a photo. */
-function CarPlaceholder() {
+export function CarPlaceholder() {
   return (
     <div className="grid h-full w-full place-items-center bg-linear-to-br from-stone-200 via-stone-100 to-stone-300 text-stone-400">
       <svg viewBox="0 0 240 120" className="w-3/5" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -58,9 +58,12 @@ export function VehicleCard({
   onPurchase,
   isPurchasing = false,
   admin,
+  onOpen,
 }: {
   vehicle: Vehicle;
   onPurchase: (id: number) => void;
+  /** Opens the detail sheet. Fires for a click anywhere on the card except Purchase and the admin menu. */
+  onOpen?: (vehicle: Vehicle) => void;
   isPurchasing?: boolean;
   /** Pass only for admins; omitting it renders no management controls. */
   admin?: VehicleCardAdmin;
@@ -70,7 +73,10 @@ export function VehicleCard({
   const label = `${vehicle.year} ${vehicle.make} ${vehicle.model}`;
 
   return (
-    <article className="relative flex flex-col rounded-2xl border border-stone-200 bg-white shadow-sm transition duration-200 hover:border-stone-300 hover:shadow-lg motion-safe:hover:-translate-y-1">
+    <article
+      onClick={onOpen ? () => onOpen(vehicle) : undefined}
+      className={`relative flex flex-col rounded-2xl border border-stone-200 bg-white shadow-sm transition duration-200 hover:border-stone-300 hover:shadow-lg motion-safe:hover:-translate-y-1 ${onOpen ? "cursor-pointer" : ""}`}
+    >
       <div className="relative aspect-[4/3] overflow-hidden rounded-t-2xl bg-stone-200">
         {vehicle.image_url && !imageFailed ? (
           <img
@@ -96,7 +102,7 @@ export function VehicleCard({
         </span>
       </div>
       {admin && (
-        <div className="absolute right-3 top-3 z-10">
+        <div className="absolute right-3 top-3 z-10" onClick={(event) => event.stopPropagation()}>
           <CardMenu
             label={label}
             onEdit={() => admin.onEdit(vehicle)}
@@ -116,7 +122,12 @@ export function VehicleCard({
             </span>
           )}
         </div>
-        <h3 className="mt-0.5 text-xl font-bold leading-tight text-stone-950">{vehicle.model}</h3>
+        <h3 className="mt-0.5 text-xl font-bold leading-tight text-stone-950">
+          {/* A real button so keyboard users can open the card; a click on it bubbles to the article. */}
+          <button type="button" aria-label={`View ${label}`} className="rounded text-left">
+            {vehicle.model}
+          </button>
+        </h3>
         <p className="mt-3 text-2xl font-bold tabular-nums text-accent-ink">{formatINR(vehicle.price)}</p>
         <div className="mb-4 mt-2 min-h-6">
           <StockLine quantity={vehicle.quantity} />
@@ -124,7 +135,10 @@ export function VehicleCard({
         <button
           type="button"
           disabled={soldOut || isPurchasing}
-          onClick={() => onPurchase(vehicle.id)}
+          onClick={(event) => {
+            event.stopPropagation();
+            onPurchase(vehicle.id);
+          }}
           className="btn btn-primary mt-auto w-full py-3 text-base sm:text-sm"
         >
           {soldOut ? "Sold out" : isPurchasing ? "Purchasing…" : "Purchase"}

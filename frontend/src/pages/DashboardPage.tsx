@@ -1,6 +1,6 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { keepPreviousData, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useSearchParams } from "react-router";
+import { useLocation, useNavigate, useSearchParams } from "react-router";
 import { ApiError, api } from "../api/client";
 import type { Vehicle, VehicleFilters } from "../api/client";
 import { useAuth } from "../auth/AuthContext";
@@ -8,6 +8,7 @@ import { ConfirmDialog } from "../components/ConfirmDialog";
 import { FilterBar } from "../components/FilterBar";
 import { RestockDialog } from "../components/RestockDialog";
 import { VehicleCard } from "../components/VehicleCard";
+import { VehicleDetailDialog } from "../components/VehicleDetailDialog";
 import { VehicleFormDialog } from "../components/VehicleFormDialog";
 import { useVehicleMutations } from "../hooks/useVehicleMutations";
 import { priceRangeError } from "../lib/filters";
@@ -26,6 +27,8 @@ const gridClasses = "mt-6 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3";
 
 export function DashboardPage() {
   const [params, setParams] = useSearchParams();
+  const location = useLocation();
+  const navigate = useNavigate();
   const filters: VehicleFilters = {};
   for (const key of keys) {
     const value = params.get(key);
@@ -49,6 +52,52 @@ export function DashboardPage() {
   const [notice, setNotice] = useState<{ message: string; error: boolean } | null>(null);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const filtersButton = useRef<HTMLButtonElement>(null);
+
+  // The open car lives in the URL (?car=<id>) so it can be linked to and Back closes it.
+  const carParam = params.get("car");
+  const carId = carParam !== null && /^\d+$/.test(carParam) ? Number(carParam) : null;
+  const openCar = carId === null ? undefined : vehicles.data?.find((vehicle) => vehicle.id === carId);
+
+  function openSheet(vehicle: Vehicle) {
+    setParams(
+      (previous) => {
+        const next = new URLSearchParams(previous);
+        next.set("car", String(vehicle.id));
+        return next;
+      },
+      { state: { sheet: true } },
+    );
+  }
+
+  function closeSheet() {
+    // A sheet we pushed is closed by going Back; one opened from a shared link has nothing to go back to.
+    if ((location.state as { sheet?: boolean } | null)?.sheet) {
+      navigate(-1);
+      return;
+    }
+    setParams(
+      (previous) => {
+        const next = new URLSearchParams(previous);
+        next.delete("car");
+        return next;
+      },
+      { replace: true },
+    );
+  }
+
+  // A ?car= that matches nothing (deleted, wrong filter, junk) is dropped once the list has settled.
+  const listSettled = vehicles.isSuccess && !vehicles.isPlaceholderData;
+  useEffect(() => {
+    if (carParam === null || (carId !== null && (!listSettled || openCar))) return;
+    setParams(
+      (previous) => {
+        const next = new URLSearchParams(previous);
+        next.delete("car");
+        return next;
+      },
+      { replace: true },
+    );
+  }, [carParam, carId, listSettled, openCar, setParams]);
 
   const { user } = useAuth();
   const isAdmin = user?.role === "admin";
@@ -99,6 +148,7 @@ export function DashboardPage() {
       await remove.mutateAsync(vehicle.id);
       saved(`Deleted ${carName(vehicle)}.`);
       closeDialog();
+      if (carId === vehicle.id) closeSheet();
     } catch {
       // The failure stays visible inside the dialog through remove.error.
     }
@@ -112,6 +162,25 @@ export function DashboardPage() {
       }
     : undefined;
 
+  const noticeBlock = notice ? (
+    <div
+      role={notice.error ? "alert" : "status"}
+      className={`flex items-center justify-between gap-3 rounded-xl border px-4 py-3 text-sm font-medium ${notice.error ? "border-red-200 bg-red-50 text-red-800" : "border-emerald-200 bg-emerald-50 text-emerald-800"}`}
+    >
+      <span>{notice.message}</span>
+      <button
+        type="button"
+        onClick={() => setNotice(null)}
+        aria-label="Dismiss notification"
+        className="-mr-1 rounded-lg p-1 text-lg leading-none hover:bg-black/5"
+      >
+        ×
+      </button>
+    </div>
+  ) : null;
+  // The sheet gives way to an admin dialog (Esc would otherwise close both) and returns when it closes.
+  const sheetVisible = openCar !== undefined && dialog === null;
+
   return (
     <main className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 md:py-12">
       <div className="mb-8 max-w-2xl">
@@ -122,22 +191,7 @@ export function DashboardPage() {
 
       <FilterBar open={filtersOpen} onClose={closeFilters} />
 
-      {notice && (
-        <div
-          role={notice.error ? "alert" : "status"}
-          className={`mt-6 flex items-center justify-between gap-3 rounded-xl border px-4 py-3 text-sm font-medium ${notice.error ? "border-red-200 bg-red-50 text-red-800" : "border-emerald-200 bg-emerald-50 text-emerald-800"}`}
-        >
-          <span>{notice.message}</span>
-          <button
-            type="button"
-            onClick={() => setNotice(null)}
-            aria-label="Dismiss notification"
-            className="-mr-1 rounded-lg p-1 text-lg leading-none hover:bg-black/5"
-          >
-            ×
-          </button>
-        </div>
-      )}
+      {!sheetVisible && noticeBlock && <div className="mt-6">{noticeBlock}</div>}
 
       <div className="mt-8 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-baseline gap-3">
@@ -239,11 +293,22 @@ export function DashboardPage() {
               onPurchase={purchase}
               isPurchasing={purchasing.has(vehicle.id)}
               admin={adminActions}
+              onOpen={openSheet}
             />
           ))}
         </div>
       )}
 
+      {sheetVisible && (
+        <VehicleDetailDialog
+          vehicle={openCar}
+          onClose={closeSheet}
+          onPurchase={purchase}
+          isPurchasing={purchasing.has(openCar.id)}
+          admin={adminActions}
+          notice={noticeBlock}
+        />
+      )}
       {isAdmin && dialog?.kind === "add" && <VehicleFormDialog onClose={closeDialog} onSaved={saved} />}
       {isAdmin && dialog?.kind === "edit" && (
         <VehicleFormDialog vehicle={dialog.vehicle} onClose={closeDialog} onSaved={saved} />

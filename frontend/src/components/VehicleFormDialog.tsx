@@ -2,9 +2,10 @@ import { useState } from "react";
 import type { FormEvent } from "react";
 
 import { ApiError, CATEGORIES, DRIVETRAINS, FUEL_TYPES } from "../api/client";
-import type { Category, Drivetrain, FuelType, Vehicle, VehicleSpecs, VehicleUpdate } from "../api/client";
+import type { Category, Vehicle, VehicleSpecs, VehicleUpdate } from "../api/client";
 import { useVehicleMutations } from "../hooks/useVehicleMutations";
 import { mapValidationErrors } from "../lib/formErrors";
+import { DRIVETRAIN_LABELS, FUEL_LABELS } from "../lib/specs";
 import { FormField } from "./FormField";
 import { Modal } from "./Modal";
 
@@ -33,15 +34,6 @@ const SPEC_FIELDS = [
 type SpecField = (typeof SPEC_FIELDS)[number];
 type Field = (typeof FIELDS)[number] | SpecField;
 type Values = Record<Field, string>;
-
-const DRIVETRAIN_LABELS: Record<Drivetrain, string> = { fwd: "FWD", rwd: "RWD", awd: "AWD", "4wd": "4WD" };
-const FUEL_LABELS: Record<FuelType, string> = {
-  petrol: "Petrol",
-  diesel: "Diesel",
-  electric: "Electric",
-  hybrid: "Hybrid",
-  cng: "CNG",
-};
 
 const TEXT_SPECS: Array<{ name: Exclude<SpecField, "fuel_type" | "drivetrain" | "seats">; label: string }> = [
   { name: "transmission", label: "Transmission" },
