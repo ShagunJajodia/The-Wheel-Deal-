@@ -55,4 +55,17 @@ describe("VehicleCard", () => {
 
     expect(screen.queryByRole("button", { name: /manage/i })).toBeNull();
   });
+
+  it("shows the stock id as a small monospace tag", () => {
+    render(<VehicleCard vehicle={{ ...vehicle, stock_id: "WD-00013" }} onPurchase={vi.fn()} />);
+
+    const tag = screen.getByText("WD-00013");
+    expect(tag.className).toContain("font-mono");
+  });
+
+  it("renders no stock tag when the vehicle has no stock id", () => {
+    render(<VehicleCard vehicle={vehicle} onPurchase={vi.fn()} />);
+
+    expect(screen.queryByText(/^WD-/)).toBeNull();
+  });
 });
