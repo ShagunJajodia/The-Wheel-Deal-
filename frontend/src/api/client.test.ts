@@ -64,3 +64,18 @@ describe("shouldRetry", () => {
     expect(shouldRetry(1, new TypeError("Failed to fetch"))).toBe(false);
   });
 });
+
+describe("checkout", () => {
+  it("posts the cart items to /api/cart/checkout", async () => {
+    storeToken("token");
+    const fetchMock = vi.fn().mockResolvedValue(jsonResponse(200, { items: [] }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await api.checkout([{ vehicle_id: 1, quantity: 2 }]);
+
+    const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect(url).toMatch(/\/api\/cart\/checkout$/);
+    expect(init.method).toBe("POST");
+    expect(JSON.parse(init.body as string)).toEqual({ items: [{ vehicle_id: 1, quantity: 2 }] });
+  });
+});
