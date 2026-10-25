@@ -268,7 +268,7 @@ Open `http://localhost:5173`. The browser origin must be listed in the backend's
 
 ## Deployment
 
-`compose.prod.yml` runs the whole app as three containers: PostgreSQL 18, the FastAPI backend (it runs `alembic upgrade head` on start), and nginx serving the production React build and proxying `/api` to the backend. Only nginx is published, on `127.0.0.1:${WEB_PORT}` (default 8095), so a tunnel or reverse proxy in front provides the public hostname and HTTPS. The live site uses a Cloudflare Tunnel public hostname pointing at `http://localhost:8095`.
+`compose.prod.yml` runs the whole app as three containers: PostgreSQL 18, the FastAPI backend (it runs `alembic upgrade head` on start), and nginx serving the production React build and proxying `/api` to the backend. Only nginx is published, on `127.0.0.1:${WEB_PORT}` (default 8095), so a tunnel or reverse proxy in front provides the public hostname and HTTPS. For a Cloudflare Tunnel, put the tunnel's token in `.env.prod` as `CLOUDFLARE_TUNNEL_TOKEN`, add `--profile tunnel` to the `up` command, and point the tunnel's public hostname at `http://web:80`; that is how the live site runs.
 
 ```bash
 git clone https://github.com/ShagunJajodia/The-Wheel-Deal-.git && cd The-Wheel-Deal-

@@ -40,5 +40,18 @@ services:
     ports:
       - "127.0.0.1:${WEB_PORT:-8095}:80"
 
+  # Optional Cloudflare Tunnel: set CLOUDFLARE_TUNNEL_TOKEN in .env.prod and start with --profile tunnel.
+  # In the Cloudflare dashboard, point the public hostname at http://web:80.
+  tunnel:
+    image: cloudflare/cloudflared:latest
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run
+    environment:
+      TUNNEL_TOKEN: ${CLOUDFLARE_TUNNEL_TOKEN:-}
+    depends_on:
+      - web
+    profiles:
+      - tunnel
+
 volumes:
   db_data:
