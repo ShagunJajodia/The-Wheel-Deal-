@@ -22,3 +22,6 @@ coverage/
 .idea/
 .DS_Store
 Thumbs.db
+
+# Production secrets (server only)
+.env.prod

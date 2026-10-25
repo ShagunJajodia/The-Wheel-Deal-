@@ -1,0 +1,44 @@
+# Production stack: docker compose -f compose.prod.yml --env-file .env.prod up -d --build
+# Only the web container is published, on localhost; put a tunnel or reverse proxy in front of it.
+name: wheeldeal
+
+services:
+  db:
+    image: postgres:18
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: wheeldeal
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env.prod}
+      POSTGRES_DB: wheeldeal
+    volumes:
+      - db_data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U wheeldeal -d wheeldeal"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build: ./backend
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql+psycopg://wheeldeal:${POSTGRES_PASSWORD}@db:5432/wheeldeal
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env.prod}
+      CORS_ORIGINS: ${PUBLIC_URL:?Set PUBLIC_URL in .env.prod}
+    depends_on:
+      db:
+        condition: service_healthy
+
+  web:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_URL: ${PUBLIC_URL}
+    restart: unless-stopped
+    depends_on:
+      - api
+    ports:
+      - "127.0.0.1:${WEB_PORT:-8095}:80"
+
+volumes:
+  db_data:

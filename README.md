@@ -266,6 +266,20 @@ npm run dev
 
 Open `http://localhost:5173`. The browser origin must be listed in the backend's `CORS_ORIGINS`; if you open the app as `http://127.0.0.1:5173` instead, add that origin there.
 
+## Deployment
+
+`compose.prod.yml` runs the whole app as three containers: PostgreSQL 18, the FastAPI backend (it runs `alembic upgrade head` on start), and nginx serving the production React build and proxying `/api` to the backend. Only nginx is published, on `127.0.0.1:${WEB_PORT}` (default 8095), so a tunnel or reverse proxy in front provides the public hostname and HTTPS. The live site uses a Cloudflare Tunnel public hostname pointing at `http://localhost:8095`.
+
+```bash
+git clone https://github.com/ShagunJajodia/The-Wheel-Deal-.git && cd The-Wheel-Deal-
+cp .env.prod.example .env.prod   # then set PUBLIC_URL and generate secrets with: openssl rand -hex 32
+docker compose -f compose.prod.yml --env-file .env.prod up -d --build
+docker compose -f compose.prod.yml --env-file .env.prod exec -e ADMIN_EMAIL=you@example.com -e ADMIN_PASSWORD='<password>' api python -m app.scripts.create_admin
+docker compose -f compose.prod.yml --env-file .env.prod exec api python -m app.scripts.seed_vehicles
+```
+
+To update: `git pull`, then the same `up -d --build`.
+
 ## API
 
 Base path `/api`. "user" means any signed-in user (admins included); protected endpoints need `Authorization: Bearer <token>`. Errors have the body `{"detail": "..."}`, except 422, where `detail` is the list FastAPI produces for validation failures.
