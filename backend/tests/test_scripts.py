@@ -180,6 +180,18 @@ def test_seed_vehicles_gives_every_car_a_photo(db_session: Session) -> None:
     assert all(url and url.startswith("https://") for url in urls)
 
 
+@pytest.mark.parametrize("url", sorted(seed_vehicles.IMAGE_URLS.values()))
+def test_seed_photo_urls_are_well_formed_wikimedia_thumbnails(url: str) -> None:
+    # .../commons/thumb/<a>/<ab>/<File>/960px-<File>: the file folder must be present.
+    prefix = "https://upload.wikimedia.org/wikipedia/commons/thumb/"
+    assert url.startswith(prefix)
+    parts = url.removeprefix(prefix).split("/")
+    assert len(parts) == 4
+    hash_dir, hash_subdir, file_name, thumb_name = parts
+    assert hash_subdir.startswith(hash_dir)
+    assert thumb_name == f"960px-{file_name}"
+
+
 def test_seed_vehicles_backfills_null_image_but_keeps_custom_image(db_session: Session) -> None:
     null_image, custom_image = seed_vehicles.SEED_VEHICLES[0], seed_vehicles.SEED_VEHICLES[1]
     db_session.add(Vehicle(**{**null_image.model_dump(), "image_url": None}))
