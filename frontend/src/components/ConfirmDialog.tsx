@@ -21,7 +21,7 @@ export function ConfirmDialog({
 }: ConfirmDialogProps) {
   return (
     <Modal title={title} role="alertdialog" onClose={busy ? () => undefined : onCancel}>
-      {message && <p className="mt-3 text-sm text-slate-600">{message}</p>}
+      {message && <p className="mt-3 text-sm text-stone-600">{message}</p>}
       {error && (
         <p role="alert" className="mt-4 rounded-xl bg-red-50 p-3 text-sm text-red-700">
           {error}
@@ -33,7 +33,7 @@ export function ConfirmDialog({
           autoFocus
           onClick={onCancel}
           disabled={busy}
-          className="rounded-xl bg-slate-100 px-5 py-2.5 font-semibold text-slate-700 hover:bg-slate-200 disabled:opacity-60"
+          className="btn btn-secondary"
         >
           Cancel
         </button>
@@ -41,7 +41,7 @@ export function ConfirmDialog({
           type="button"
           onClick={onConfirm}
           disabled={busy}
-          className="rounded-xl bg-red-600 px-5 py-2.5 font-semibold text-white hover:bg-red-700 disabled:opacity-60"
+          className="btn btn-danger"
         >
           {busy ? "Working…" : confirmLabel}
         </button>

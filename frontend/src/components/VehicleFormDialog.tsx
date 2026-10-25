@@ -231,14 +231,14 @@ export function VehicleFormDialog({ vehicle, onClose, onSaved }: VehicleFormDial
             type="button"
             onClick={onClose}
             disabled={busy}
-            className="rounded-xl bg-slate-100 px-5 py-2.5 font-semibold text-slate-700 hover:bg-slate-200 disabled:opacity-60"
+            className="btn btn-secondary"
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={busy}
-            className="rounded-xl bg-indigo-600 px-5 py-2.5 font-bold text-white hover:bg-indigo-700 disabled:opacity-60"
+            className="btn btn-primary"
           >
             {busy ? "Saving…" : editing ? "Save changes" : "Add vehicle"}
           </button>

@@ -22,7 +22,7 @@ export function FormField({ label, name, error, hint, children }: FormFieldProps
   const errorId = `${id}-error`;
   return (
     <div>
-      <label htmlFor={id} className="text-sm font-semibold text-slate-700">
+      <label htmlFor={id} className="text-sm font-semibold text-stone-700">
         {label}
       </label>
       <div className="mt-1.5">
@@ -38,7 +38,7 @@ export function FormField({ label, name, error, hint, children }: FormFieldProps
           {error}
         </p>
       ) : (
-        hint && <p className="mt-1.5 text-xs text-slate-500">{hint}</p>
+        hint && <p className="mt-1.5 text-xs text-stone-500">{hint}</p>
       )}
     </div>
   );

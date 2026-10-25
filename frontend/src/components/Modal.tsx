@@ -62,7 +62,7 @@ export function Modal({ title, onClose, children, role = "dialog" }: ModalProps)
 
   return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-slate-950/60 sm:items-center sm:p-4"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-stone-950/60 sm:items-center sm:p-4"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) onClose();
       }}
@@ -74,17 +74,17 @@ export function Modal({ title, onClose, children, role = "dialog" }: ModalProps)
         aria-labelledby={titleId}
         tabIndex={-1}
         onKeyDown={trapTab}
-        className="max-h-full w-full max-w-lg overflow-y-auto rounded-t-3xl bg-white p-6 shadow-2xl outline-none sm:rounded-3xl"
+        className="max-h-full w-full max-w-lg overflow-y-auto rounded-t-3xl bg-white p-6 shadow-2xl outline-none sm:rounded-2xl"
       >
         <div className="flex items-start justify-between gap-4">
-          <h2 id={titleId} className="text-xl font-bold text-slate-950">
+          <h2 id={titleId} className="text-xl font-bold text-stone-950">
             {title}
           </h2>
           <button
             type="button"
             onClick={onClose}
             aria-label="Close"
-            className="-mr-2 -mt-2 rounded-lg p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-800"
+            className="-mr-2 -mt-2 rounded-lg p-2 text-stone-500 hover:bg-stone-100 hover:text-stone-900"
           >
             <svg viewBox="0 0 20 20" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
               <path d="M5 5l10 10M15 5L5 15" />

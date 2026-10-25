@@ -30,4 +30,29 @@ describe("VehicleCard", () => {
     expect(screen.getByText(/only 3 left/i)).toBeTruthy();
     expect(screen.getByRole("button", { name: /purchase/i }).hasAttribute("disabled")).toBe(false);
   });
+
+  it("formats the price as whole rupees", () => {
+    render(<VehicleCard vehicle={vehicle} onPurchase={vi.fn()} />);
+
+    expect(screen.getByText("₹12,50,000")).toBeTruthy();
+  });
+
+  it("shows a placeholder instead of an image when image_url is null", () => {
+    render(<VehicleCard vehicle={vehicle} onPurchase={vi.fn()} />);
+
+    expect(screen.queryByRole("img")).toBeNull();
+    expect(screen.getByText("suv")).toBeTruthy();
+  });
+
+  it("renders the photo with a descriptive alt when image_url is set", () => {
+    render(<VehicleCard vehicle={{ ...vehicle, image_url: "https://example.com/nexon.jpg" }} onPurchase={vi.fn()} />);
+
+    expect(screen.getByRole("img", { name: "Tata Nexon" }).getAttribute("src")).toBe("https://example.com/nexon.jpg");
+  });
+
+  it("shows no management controls unless admin actions are passed", () => {
+    render(<VehicleCard vehicle={vehicle} onPurchase={vi.fn()} />);
+
+    expect(screen.queryByRole("button", { name: /manage/i })).toBeNull();
+  });
 });

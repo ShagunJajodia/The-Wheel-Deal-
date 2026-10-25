@@ -55,7 +55,7 @@ export function CardMenu({ label, onEdit, onRestock, onDelete }: CardMenuProps) 
   }
 
   const item =
-    "block w-full px-4 py-2.5 text-left text-sm font-semibold hover:bg-slate-100 focus:bg-slate-100 focus:outline-none";
+    "block w-full px-4 py-2.5 text-left text-sm font-semibold hover:bg-stone-100 focus:bg-stone-100";
 
   return (
     <div ref={root} onKeyDown={onKeyDown} className="relative">
@@ -67,7 +67,7 @@ export function CardMenu({ label, onEdit, onRestock, onDelete }: CardMenuProps) 
         aria-expanded={open}
         aria-controls={open ? menuId : undefined}
         onClick={() => setOpen((previous) => !previous)}
-        className="grid h-9 w-9 place-items-center rounded-full bg-white/90 text-slate-700 shadow-sm hover:bg-white"
+        className="grid h-9 w-9 place-items-center rounded-full bg-white/90 text-stone-800 shadow-sm hover:bg-white"
       >
         <svg viewBox="0 0 20 20" className="h-5 w-5" fill="currentColor" aria-hidden="true">
           <circle cx="4" cy="10" r="1.75" />
@@ -80,12 +80,12 @@ export function CardMenu({ label, onEdit, onRestock, onDelete }: CardMenuProps) 
           id={menuId}
           role="menu"
           aria-label={`Actions for ${label}`}
-          className="absolute right-0 z-20 mt-2 w-40 overflow-hidden rounded-xl border border-slate-200 bg-white py-1 shadow-xl"
+          className="absolute right-0 z-20 mt-2 w-40 overflow-hidden rounded-xl border border-stone-200 bg-white py-1 shadow-xl"
         >
-          <button type="button" role="menuitem" onClick={() => choose(onEdit)} className={`${item} text-slate-700`}>
+          <button type="button" role="menuitem" onClick={() => choose(onEdit)} className={`${item} text-stone-800`}>
             Edit
           </button>
-          <button type="button" role="menuitem" onClick={() => choose(onRestock)} className={`${item} text-slate-700`}>
+          <button type="button" role="menuitem" onClick={() => choose(onRestock)} className={`${item} text-stone-800`}>
             Restock
           </button>
           <button type="button" role="menuitem" onClick={() => choose(onDelete)} className={`${item} text-red-700`}>
