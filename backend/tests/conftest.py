@@ -7,9 +7,9 @@ from sqlalchemy.engine import Engine, make_url
 from sqlalchemy.orm import Session
 
 from app.core.config import get_settings
-from app.db.base import Base
 from app.db.session import get_db
 from app.main import app
+from app.models import User
 
 
 @pytest.fixture(scope="session")
@@ -27,9 +27,9 @@ def test_engine() -> Iterator[Engine]:
     engine = create_engine(settings.test_database_url)
     with engine.connect() as connection:
         connection.execute(text("SELECT 1"))
-    Base.metadata.create_all(bind=engine)
+    User.metadata.create_all(bind=engine)
     yield engine
-    Base.metadata.drop_all(bind=engine)
+    User.metadata.drop_all(bind=engine)
     engine.dispose()
 
 
