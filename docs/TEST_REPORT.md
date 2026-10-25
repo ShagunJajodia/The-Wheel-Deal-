@@ -1,7 +1,7 @@
 # Test report
 
-Date: 2026-10-25 18:41 IST  
-Commit: e046010
+Date: 2026-10-25 18:51 IST  
+Commit: 79a3c85
 
 Raw output, written straight from the shell.
 
@@ -56,7 +56,7 @@ app\services\auth.py               38      0   100%
 app\services\vehicle.py            63      0   100%
 -------------------------------------------------------------
 TOTAL                             614      6    99%
-165 passed, 1 warning in 73.29s (0:01:13)
+165 passed, 1 warning in 95.73s (0:01:35)
 ```
 
 ## Backend: ruff
@@ -75,11 +75,11 @@ $ npx vitest run
 
 
  Test Files  11 passed (11)
-      Tests  57 passed (57)
-   Start at  18:42:21
-   Duration  12.80s (environment 71%, tests 14%, setup 10%, import 4%, transform 1%)
+      Tests  59 passed (59)
+   Start at  18:52:42
+   Duration  19.49s (environment 54%, tests 20%, setup 17%, import 7%, transform 2%)
 
-Environment  jsdom was created 11 times · 61.62s total, 71% of tracked time
+Environment  jsdom was created 11 times · 76.72s total, 54% of tracked time
              create it once per worker with pool: 'vmThreads' (keeps per-file isolation) or isolate: false (shares it across files)
              learn more: https://vitest.dev/guide/improving-performance#test-environments
 
