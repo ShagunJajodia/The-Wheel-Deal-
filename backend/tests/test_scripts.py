@@ -173,6 +173,33 @@ def test_seed_vehicles_skips_cars_that_already_exist(db_session: Session) -> Non
     assert count_vehicles(db_session) == len(seed_vehicles.SEED_VEHICLES)
 
 
+def test_seed_vehicles_gives_every_car_a_photo(db_session: Session) -> None:
+    seed_vehicles.seed_vehicles(db_session)
+
+    urls = db_session.scalars(select(Vehicle.image_url)).all()
+    assert all(url and url.startswith("https://") for url in urls)
+
+
+def test_seed_vehicles_backfills_null_image_but_keeps_custom_image(db_session: Session) -> None:
+    null_image, custom_image = seed_vehicles.SEED_VEHICLES[0], seed_vehicles.SEED_VEHICLES[1]
+    db_session.add(Vehicle(**{**null_image.model_dump(), "image_url": None}))
+    db_session.add(Vehicle(**{**custom_image.model_dump(), "image_url": "https://example.com/mine.jpg"}))
+    db_session.commit()
+
+    result = seed_vehicles.seed_vehicles(db_session)
+
+    assert (result.added, result.backfilled, result.skipped) == (
+        len(seed_vehicles.SEED_VEHICLES) - 2,
+        1,
+        1,
+    )
+    db_session.expire_all()
+    filled = db_session.scalars(select(Vehicle).where(Vehicle.model == null_image.model)).one()
+    kept = db_session.scalars(select(Vehicle).where(Vehicle.model == custom_image.model)).one()
+    assert filled.image_url == null_image.image_url
+    assert kept.image_url == "https://example.com/mine.jpg"
+
+
 def test_seed_vehicles_ignores_duplicates_within_the_input(db_session: Session) -> None:
     car = VehicleCreate(
         make="Tata", model="Harrier", year=2024, category=VehicleCategory.suv,
@@ -189,10 +216,10 @@ def test_seed_vehicles_main_prints_counts(
 ) -> None:
     assert seed_vehicles.main() == 0
     assert capsys.readouterr().out.strip() == (
-        f"Seeded vehicles: {len(seed_vehicles.SEED_VEHICLES)} added, 0 skipped"
+        f"Seeded vehicles: {len(seed_vehicles.SEED_VEHICLES)} added, 0 backfilled, 0 skipped"
     )
 
     assert seed_vehicles.main() == 0
     assert capsys.readouterr().out.strip() == (
-        f"Seeded vehicles: 0 added, {len(seed_vehicles.SEED_VEHICLES)} skipped"
+        f"Seeded vehicles: 0 added, 0 backfilled, {len(seed_vehicles.SEED_VEHICLES)} skipped"
     )
