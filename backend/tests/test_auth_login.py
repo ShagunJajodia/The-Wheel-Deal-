@@ -1,14 +1,17 @@
 import base64
-from datetime import datetime, timedelta, timezone
 import hashlib
 import hmac
 import json
+from datetime import UTC, datetime, timedelta
+from typing import Annotated
 
 from fastapi import Depends, FastAPI
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
+from app.api.exception_handlers import handle_domain_error
 from app.core.config import get_settings
+from app.core.errors import DomainError
 from app.models.user import User
 
 
@@ -43,7 +46,7 @@ def test_login_returns_signed_bearer_token_with_user_claims(
     user = db_session.query(User).filter_by(email="user@example.com").one()
     assert claims["sub"] == str(user.id)
     assert claims["role"] == "user"
-    assert 0 < claims["exp"] - datetime.now(timezone.utc).timestamp() <= 3600
+    assert 0 < claims["exp"] - datetime.now(UTC).timestamp() <= 3600
 
 
 def test_login_invalid_credentials_share_one_response(client: TestClient) -> None:
@@ -74,7 +77,7 @@ def test_me_rejects_missing_garbage_expired_and_deleted_user(
     client: TestClient, db_session: Session, user_token: str
 ) -> None:
     claims = _payload(user_token)
-    expired = _signed_token({**claims, "exp": int((datetime.now(timezone.utc) - timedelta(minutes=1)).timestamp())})
+    expired = _signed_token({**claims, "exp": int((datetime.now(UTC) - timedelta(minutes=1)).timestamp())})
     for headers in ({}, {"Authorization": "Bearer garbage"}, {"Authorization": f"Bearer {expired}"}):
         assert client.get("/api/auth/me", headers=headers).status_code == 401
     db_session.query(User).filter_by(email="user@example.com").delete()
@@ -88,10 +91,11 @@ def test_admin_dependency_rejects_user_and_accepts_admin(
     from app.api.dependencies import require_admin
 
     probe = FastAPI()
+    probe.add_exception_handler(DomainError, handle_domain_error)
     probe.dependency_overrides.update(client.app.dependency_overrides)
 
     @probe.get("/admin")
-    def admin_only(admin: User = Depends(require_admin)) -> dict[str, int]:
+    def admin_only(admin: Annotated[User, Depends(require_admin)]) -> dict[str, int]:
         return {"id": admin.id}
 
     with TestClient(probe) as probe_client:

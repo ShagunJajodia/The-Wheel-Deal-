@@ -52,3 +52,13 @@ class UserRead(BaseModel):
     email: str
     full_name: str
     role: UserRole
+
+
+class LoginRequest(BaseModel):
+    email: str
+    password: str
+
+
+class TokenRead(BaseModel):
+    access_token: str
+    token_type: str = "bearer"

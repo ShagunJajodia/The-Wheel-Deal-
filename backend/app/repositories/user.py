@@ -8,6 +8,10 @@ def get_user_by_email(db: Session, email: str) -> User | None:
     return db.scalar(select(User).where(func.lower(User.email) == email.lower()))
 
 
+def get_user_by_id(db: Session, user_id: int) -> User | None:
+    return db.get(User, user_id)
+
+
 def add_user(
     db: Session, *, email: str, full_name: str, password_hash: str
 ) -> User:
