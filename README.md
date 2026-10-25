@@ -365,7 +365,11 @@ A sold-out vehicle:
 
 ![Sold-out vehicle](docs/screenshots/sold-out.png)
 
-Admin add/edit modal:
+Shopping cart with all-or-nothing checkout:
+
+![Cart drawer](docs/screenshots/cart.png)
+
+Admin edit modal (no quantity field; stock changes only through purchase and restock):
 
 ![Admin modal](docs/screenshots/admin-modal.png)
 
@@ -375,4 +379,12 @@ Mobile layout:
 
 ## My AI Usage
 
-TODO
+I built this with several AI tools and kept the TDD rules in `AGENTS.md` for all of them. Each commit's co-author trailer records which tool made it.
+
+- **Claude (Claude Code desktop app)** planned the build order, drafted the prompts for Codex, wrote `AGENTS.md` and the `.codex/agents` config, installed and configured PostgreSQL, diagnosed a psycopg/libpq import error, and checked Codex's commits.
+- **OpenAI Codex (desktop app, GPT-6 Sol)** wrote the first part of the code in red/green commits: the skeleton, registration, login/JWT and the first vehicle tests, plus the first version of the frontend. Its `test-runner` sub-agent (GPT-6 Luna) ran the tests, and its `reviewer` sub-agent caught the PostgreSQL 18 Docker volume path and a malformed-email validation gap. The backend and frontend were built in parallel against a written API contract.
+- **Google Antigravity** took over when the Claude usage limit was hit, and built vehicle listing, search, update and delete.
+- **Claude Code (Opus 5.5) as orchestrator** finished the project. Sonnet sub-agents wrote purchase/restock, the admin scripts, the admin UI and design pass, the cart with atomic checkout, and the README draft. Opus verified each red/green pair by replaying the red commit, ran the tests itself, and did the end-to-end browser walkthrough and the deployment. Sonnet reviewers found real bugs: a 500 and an account-existence leak on overlong login passwords, unescaped search wildcards, double purchases across cards, and search errors wiping the grid. Each was fixed test-first.
+- **My part:** I set the requirements and order of work, and made the product calls (cart design, Wikimedia photos, deploying to my own server). I reported the price-filter bug, created the Cloudflare tunnel, and reviewed the results.
+
+What I learned: AI reviewers found bugs the AI writers missed, but the tools also made mistakes that only verification caught. Seeded photo URLs were malformed, one photo was picked by filename and turned out to be a number plate, one test was flaky under load, and one commit is missing its trailer. Re-running tests and checking commits myself mattered more than any single tool.
