@@ -1,5 +1,7 @@
 # The Wheel Deal
 
+**Live:** [thewheeldeal.shagunjajodia.in](https://thewheeldeal.shagunjajodia.in) (register an account to browse and buy; API docs at [/docs](https://thewheeldeal.shagunjajodia.in/docs))
+
 A car dealership inventory app: a FastAPI + PostgreSQL backend and a React + TypeScript frontend, built as a TDD kata. The backend was written test-first: the git history shows red `test:` commits followed by green `feat:` / `fix:` commits.
 
 ## Features
