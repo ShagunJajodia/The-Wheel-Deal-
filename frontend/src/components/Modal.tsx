@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import type { KeyboardEvent, ReactNode } from "react";
 import { createPortal } from "react-dom";
 
@@ -17,11 +17,12 @@ interface ModalProps {
 export function Modal({ title, onClose, children, role = "dialog" }: ModalProps) {
   const titleId = useId();
   const panel = useRef<HTMLDivElement>(null);
+  // Read while rendering, before any child with autoFocus has stolen focus from the opener.
+  const [opener] = useState(() => document.activeElement as HTMLElement | null);
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
 
   useEffect(() => {
-    const previouslyFocused = document.activeElement as HTMLElement | null;
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
 
@@ -38,9 +39,9 @@ export function Modal({ title, onClose, children, role = "dialog" }: ModalProps)
     return () => {
       document.removeEventListener("keydown", onKeyDown);
       document.body.style.overflow = previousOverflow;
-      previouslyFocused?.focus?.();
+      opener?.focus?.();
     };
-  }, []);
+  }, [opener]);
 
   function trapTab(event: KeyboardEvent<HTMLDivElement>) {
     if (event.key !== "Tab" || !panel.current) return;
@@ -51,7 +52,8 @@ export function Modal({ title, onClose, children, role = "dialog" }: ModalProps)
     }
     const first = items[0];
     const last = items[items.length - 1];
-    if (event.shiftKey && document.activeElement === first) {
+    // Shift+Tab from the panel itself (tabIndex -1) must wrap just like it does from the first control.
+    if (event.shiftKey && (document.activeElement === first || document.activeElement === panel.current)) {
       event.preventDefault();
       last.focus();
     } else if (!event.shiftKey && document.activeElement === last) {

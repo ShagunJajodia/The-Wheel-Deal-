@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import type { Mock } from "vitest";
 
 import { ApiError, api, getStoredToken, shouldRetry, storeToken } from "./client";
 
@@ -14,12 +15,12 @@ afterEach(() => {
 });
 
 describe("401 handling", () => {
-  let assign: ReturnType<typeof vi.fn>;
-  let expired: ReturnType<typeof vi.fn>;
+  let assign: Mock<(url: string) => void>;
+  let expired: Mock<() => void>;
 
   beforeEach(() => {
-    assign = vi.fn();
-    expired = vi.fn();
+    assign = vi.fn<(url: string) => void>();
+    expired = vi.fn<() => void>();
     vi.stubGlobal("location", { pathname: "/register", assign });
     window.addEventListener("auth:expired", expired);
   });

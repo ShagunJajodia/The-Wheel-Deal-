@@ -67,6 +67,12 @@ export class ApiError extends Error {
   }
 }
 
+/** Query retry policy: a 4xx will fail the same way again, so only retry 5xx and network errors, once. */
+export function shouldRetry(failureCount: number, error: unknown): boolean {
+  if (error instanceof ApiError && error.status < 500) return false;
+  return failureCount < 1;
+}
+
 const BASE_URL = (import.meta.env.VITE_API_URL || "http://localhost:8000").replace(/\/$/, "");
 const TOKEN_KEY = "wheel-deal-token";
 
@@ -96,11 +102,10 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
 
   const response = await fetch(`${BASE_URL}${path}`, { ...init, headers });
   if (response.status === 401) {
+    // AuthProvider listens for this and clears its state; ProtectedRoute then redirects
+    // protected pages to /login. Public pages (/register) must stay where they are.
     clearStoredToken();
     window.dispatchEvent(new Event("auth:expired"));
-    if (window.location.pathname !== "/login" && path !== "/api/auth/login") {
-      window.location.assign("/login");
-    }
   }
 
   if (!response.ok) {

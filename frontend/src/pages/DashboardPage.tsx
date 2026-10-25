@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { keepPreviousData, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSearchParams } from "react-router";
 import { ApiError, api } from "../api/client";
 import type { Vehicle, VehicleFilters } from "../api/client";
@@ -10,6 +10,7 @@ import { RestockDialog } from "../components/RestockDialog";
 import { VehicleCard } from "../components/VehicleCard";
 import { VehicleFormDialog } from "../components/VehicleFormDialog";
 import { useVehicleMutations } from "../hooks/useVehicleMutations";
+import { priceRangeError } from "../lib/filters";
 
 const keys = ["make", "model", "category", "min_price", "max_price"] as const;
 
@@ -33,12 +34,18 @@ export function DashboardPage() {
   const filterKey = keys.map((key) => `${key}:${filters[key] ?? ""}`).join("|");
   const activeFilters = Object.keys(filters).length;
   const filtered = activeFilters > 0;
+  const rangeInvalid = priceRangeError(filters.min_price ?? "", filters.max_price ?? "") !== null;
   const vehicles = useQuery({
     queryKey: ["vehicles", filterKey],
     queryFn: () => (filtered ? api.searchVehicles(filters) : api.listVehicles()),
+    // An empty price range can only 422, so do not ask; keep the old grid while a new search loads.
+    enabled: !rangeInvalid,
+    placeholderData: keepPreviousData,
   });
   const queryClient = useQueryClient();
-  const [purchasing, setPurchasing] = useState<number | null>(null);
+  // Every purchase in flight. The ref guards against two clicks in the same tick, before React re-renders.
+  const [purchasing, setPurchasing] = useState<ReadonlySet<number>>(() => new Set());
+  const purchasingRef = useRef(new Set<number>());
   const [notice, setNotice] = useState<{ message: string; error: boolean } | null>(null);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const filtersButton = useRef<HTMLButtonElement>(null);
@@ -57,12 +64,15 @@ export function DashboardPage() {
     filtersButton.current?.focus();
   };
 
+  const clearFilters = () => setParams({}, { replace: true });
+
   async function purchase(id: number) {
-    setPurchasing(id);
+    if (purchasingRef.current.has(id)) return;
+    purchasingRef.current.add(id);
+    setPurchasing(new Set(purchasingRef.current));
     try {
       await api.purchaseVehicle(id);
       setNotice({ message: "Purchase complete! Enjoy your new ride.", error: false });
-      await queryClient.invalidateQueries({ queryKey: ["vehicles"] });
     } catch (error) {
       setNotice({
         message:
@@ -73,11 +83,14 @@ export function DashboardPage() {
               : "Purchase failed. Please try again.",
         error: true,
       });
-      if (error instanceof ApiError && error.status === 409) {
-        await queryClient.invalidateQueries({ queryKey: ["vehicles"] });
-      }
     } finally {
-      setPurchasing(null);
+      // Whatever happened (sold, sold out, deleted elsewhere), the list on screen may be stale.
+      try {
+        await queryClient.invalidateQueries({ queryKey: ["vehicles"] });
+      } finally {
+        purchasingRef.current.delete(id);
+        setPurchasing(new Set(purchasingRef.current));
+      }
     }
   }
 
@@ -129,7 +142,7 @@ export function DashboardPage() {
       <div className="mt-8 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-baseline gap-3">
           <h2 className="text-2xl font-bold text-stone-950">Available vehicles</h2>
-          {vehicles.data && (
+          {vehicles.data && !rangeInvalid && (
             <span className="text-sm text-stone-500">
               {vehicles.data.length} result{vehicles.data.length === 1 ? "" : "s"}
             </span>
@@ -165,7 +178,15 @@ export function DashboardPage() {
         </div>
       </div>
 
-      {vehicles.isPending ? (
+      {rangeInvalid ? (
+        <div role="status" className="mt-6 rounded-2xl border border-dashed border-stone-300 bg-white p-10 text-center sm:p-12">
+          <h3 className="text-xl font-bold text-stone-950">Check the price range</h3>
+          <p className="mt-2 text-stone-600">Set a minimum at or below the maximum to see matching vehicles.</p>
+          <button type="button" onClick={clearFilters} className="btn btn-primary mt-5">
+            Clear filters
+          </button>
+        </div>
+      ) : vehicles.isPending ? (
         <div className={gridClasses} aria-label="Loading vehicles" aria-busy="true">
           {[1, 2, 3, 4, 5, 6].map((item) => (
             <div key={item} className="overflow-hidden rounded-2xl border border-stone-200 bg-white">
@@ -182,9 +203,18 @@ export function DashboardPage() {
         <div role="alert" className="mt-6 rounded-2xl border border-red-200 bg-red-50 p-8 text-center sm:p-10">
           <h3 className="text-xl font-bold text-red-900">Couldn't load vehicles</h3>
           <p className="mt-2 text-red-800">{vehicles.error instanceof Error ? vehicles.error.message : "Please try again."}</p>
-          <button type="button" onClick={() => vehicles.refetch()} className="btn btn-secondary mt-5">
-            Retry
-          </button>
+          <div className="mt-5 flex flex-wrap justify-center gap-3">
+            {filtered && (
+              <button type="button" onClick={clearFilters} className="btn btn-primary">
+                Clear filters
+              </button>
+            )}
+            {!(vehicles.error instanceof ApiError && vehicles.error.status < 500) && (
+              <button type="button" onClick={() => vehicles.refetch()} className="btn btn-secondary">
+                Retry
+              </button>
+            )}
+          </div>
         </div>
       ) : vehicles.data.length === 0 ? (
         <div className="mt-6 rounded-2xl border border-dashed border-stone-300 bg-white p-10 text-center sm:p-12">
@@ -195,19 +225,19 @@ export function DashboardPage() {
           <h3 className="mt-4 text-xl font-bold text-stone-950">No vehicles found</h3>
           <p className="mt-2 text-stone-600">Try a different search to find your fit.</p>
           {filtered && (
-            <button type="button" onClick={() => setParams({})} className="btn btn-primary mt-5">
+            <button type="button" onClick={clearFilters} className="btn btn-primary mt-5">
               Clear filters
             </button>
           )}
         </div>
       ) : (
-        <div className={gridClasses}>
+        <div className={`${gridClasses} ${vehicles.isPlaceholderData ? "opacity-60 transition-opacity" : ""}`} aria-busy={vehicles.isPlaceholderData}>
           {vehicles.data.map((vehicle) => (
             <VehicleCard
               key={vehicle.id}
               vehicle={vehicle}
               onPurchase={purchase}
-              isPurchasing={purchasing === vehicle.id}
+              isPurchasing={purchasing.has(vehicle.id)}
               admin={adminActions}
             />
           ))}

@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import type { ReactNode } from "react";
 
-import { ApiError, api, clearStoredToken, getStoredToken, storeToken } from "../api/client";
+import { api, clearStoredToken, getStoredToken, storeToken } from "../api/client";
 import type { User } from "../api/client";
 
 interface AuthState {
@@ -21,6 +21,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const onExpired = () => {
+      clearStoredToken();
       setToken(null);
       setUser(null);
       setIsLoading(false);
@@ -36,8 +37,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .then((profile) => {
         if (active) setUser(profile);
       })
-      .catch((error: unknown) => {
-        if (active && error instanceof ApiError && error.status === 401) {
+      .catch(() => {
+        // Any failure to load the profile means we cannot trust the session: sign out so
+        // the user logs in again, rather than staying half signed in without their role.
+        if (active) {
           clearStoredToken();
           setToken(null);
           setUser(null);
@@ -58,6 +61,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(true);
     try {
       setUser(await api.me());
+    } catch (error) {
+      clearStoredToken();
+      setToken(null);
+      setUser(null);
+      throw error;
     } finally {
       setIsLoading(false);
     }

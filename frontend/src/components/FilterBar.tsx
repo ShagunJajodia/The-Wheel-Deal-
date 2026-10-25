@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { useSearchParams } from "react-router";
 import { CATEGORIES } from "../api/client";
+import { priceRangeError } from "../lib/filters";
 
 interface FilterBarProps {
   /** Below md the filters live in a drawer; this opens it. Ignored from md up. */
@@ -12,8 +13,14 @@ export function FilterBar({ open = false, onClose = () => undefined }: FilterBar
   const [params, setParams] = useSearchParams();
   const urlMake = params.get("make") ?? "";
   const urlModel = params.get("model") ?? "";
+  const urlMin = params.get("min_price") ?? "";
+  const urlMax = params.get("max_price") ?? "";
   const [make, setMake] = useState(urlMake);
   const [model, setModel] = useState(urlModel);
+  const [minPrice, setMinPrice] = useState(urlMin);
+  const [maxPrice, setMaxPrice] = useState(urlMax);
+  const rangeError = priceRangeError(minPrice, maxPrice);
+  const rangeErrorId = useId();
   const pending = useRef(false);
   const closeButton = useRef<HTMLButtonElement>(null);
   const onCloseRef = useRef(onClose);
@@ -26,7 +33,7 @@ export function FilterBar({ open = false, onClose = () => undefined }: FilterBar
     const timer = window.setTimeout(() => {
       setParams((previous) => {
         const next = new URLSearchParams(previous);
-        for (const [key, value] of [["make", make], ["model", model]]) {
+        for (const [key, value] of [["make", make], ["model", model], ["min_price", minPrice], ["max_price", maxPrice]]) {
           if (value.trim()) next.set(key, value.trim()); else next.delete(key);
         }
         return next;
@@ -34,14 +41,16 @@ export function FilterBar({ open = false, onClose = () => undefined }: FilterBar
       pending.current = false;
     }, 300);
     return () => window.clearTimeout(timer);
-  }, [make, model, setParams]);
+  }, [make, model, minPrice, maxPrice, setParams]);
 
   // Pick up URL changes made elsewhere (for example "Clear filters") without fighting typing.
   useEffect(() => {
     if (pending.current) return;
     setMake((current) => (current.trim() === urlMake ? current : urlMake));
     setModel((current) => (current.trim() === urlModel ? current : urlModel));
-  }, [urlMake, urlModel]);
+    setMinPrice((current) => (current.trim() === urlMin ? current : urlMin));
+    setMaxPrice((current) => (current.trim() === urlMax ? current : urlMax));
+  }, [urlMake, urlModel, urlMin, urlMax]);
 
   // Drawer behaviour for small screens: scroll lock, Escape, focus, and auto-close at md+.
   useEffect(() => {
@@ -77,6 +86,8 @@ export function FilterBar({ open = false, onClose = () => undefined }: FilterBar
     pending.current = false;
     setMake("");
     setModel("");
+    setMinPrice("");
+    setMaxPrice("");
     setParams({}, { replace: true });
   }
 
@@ -100,8 +111,9 @@ export function FilterBar({ open = false, onClose = () => undefined }: FilterBar
         <div className="grid gap-4 md:grid-cols-4">
           <label className={label}>Make<input aria-label="Make" value={make} onChange={(event) => { pending.current = true; setMake(event.target.value); }} placeholder="e.g. Tata" className="input mt-1.5 font-normal" /></label>
           <label className={label}>Model<input aria-label="Model" value={model} onChange={(event) => { pending.current = true; setModel(event.target.value); }} placeholder="e.g. Nexon" className="input mt-1.5 font-normal" /></label>
-          <label className={label}>Min price<input aria-label="Min price" type="number" inputMode="numeric" min="0" value={params.get("min_price") ?? ""} onChange={(event) => update("min_price", event.target.value)} placeholder="₹ Min" className="input mt-1.5 font-normal" /></label>
-          <label className={label}>Max price<input aria-label="Max price" type="number" inputMode="numeric" min="0" value={params.get("max_price") ?? ""} onChange={(event) => update("max_price", event.target.value)} placeholder="₹ Max" className="input mt-1.5 font-normal" /></label>
+          <label className={label}>Min price<input aria-label="Min price" type="number" inputMode="numeric" min="0" value={minPrice} onChange={(event) => { pending.current = true; setMinPrice(event.target.value); }} aria-invalid={rangeError ? "true" : undefined} aria-describedby={rangeError ? rangeErrorId : undefined} placeholder="₹ Min" className="input mt-1.5 font-normal" /></label>
+          <label className={label}>Max price<input aria-label="Max price" type="number" inputMode="numeric" min="0" value={maxPrice} onChange={(event) => { pending.current = true; setMaxPrice(event.target.value); }} aria-invalid={rangeError ? "true" : undefined} aria-describedby={rangeError ? rangeErrorId : undefined} placeholder="₹ Max" className="input mt-1.5 font-normal" /></label>
+          {rangeError && <p id={rangeErrorId} role="alert" className="text-sm text-red-600 md:col-span-4">{rangeError}</p>}
         </div>
         <div className="flex flex-wrap gap-2 md:mt-5" role="group" aria-label="Categories">
           {CATEGORIES.map((item) => (

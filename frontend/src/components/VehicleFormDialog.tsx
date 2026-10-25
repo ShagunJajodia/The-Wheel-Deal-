@@ -125,6 +125,7 @@ export function VehicleFormDialog({ vehicle, onClose, onSaved }: VehicleFormDial
                 value={values.make}
                 onChange={(event) => change("make", event.target.value)}
                 autoComplete="off"
+                autoFocus
                 className="input"
               />
             )}
