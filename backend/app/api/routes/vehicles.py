@@ -10,6 +10,7 @@ from app.schemas.vehicle import (
     VehicleCreate,
     VehiclePurchase,
     VehicleRead,
+    VehicleRestock,
     VehicleSearchParams,
     VehicleUpdate,
 )
@@ -21,6 +22,7 @@ from app.services.vehicle import (
     get_vehicles,
     modify_vehicle,
     purchase_vehicle,
+    restock_vehicle,
 )
 
 router = APIRouter()
@@ -80,6 +82,16 @@ def purchase(
 ) -> VehicleRead:
     quantity = data.quantity if data is not None else 1
     return purchase_vehicle(db, vehicle_id, quantity)
+
+
+@router.post("/{vehicle_id}/restock", response_model=VehicleRead)
+def restock(
+    vehicle_id: int,
+    data: VehicleRestock,
+    db: Annotated[Session, Depends(get_db)],
+    _admin: Annotated[User, Depends(require_admin)],
+) -> VehicleRead:
+    return restock_vehicle(db, vehicle_id, data.quantity)
 
 
 @router.delete("/{vehicle_id}", status_code=status.HTTP_204_NO_CONTENT)

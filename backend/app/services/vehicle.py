@@ -6,6 +6,7 @@ from app.repositories.vehicle import (
     add_vehicle,
     decrement_stock,
     get_vehicle_by_id,
+    increment_stock,
     list_vehicles,
     remove_vehicle,
     search_vehicles,
@@ -64,6 +65,15 @@ def purchase_vehicle(db: Session, vehicle_id: int, quantity: int) -> Vehicle:
         if not vehicle_exists(db, vehicle_id):
             raise VehicleNotFound
         raise OutOfStock
+    db.commit()
+    db.refresh(vehicle)
+    return vehicle
+
+
+def restock_vehicle(db: Session, vehicle_id: int, quantity: int) -> Vehicle:
+    vehicle = increment_stock(db, vehicle_id, quantity)
+    if vehicle is None:
+        raise VehicleNotFound
     db.commit()
     db.refresh(vehicle)
     return vehicle

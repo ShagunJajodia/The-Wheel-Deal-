@@ -69,3 +69,15 @@ def decrement_stock(db: Session, vehicle_id: int, quantity: int) -> Vehicle | No
         .execution_options(synchronize_session=False, populate_existing=True)
     )
     return db.scalars(stmt).one_or_none()
+
+
+def increment_stock(db: Session, vehicle_id: int, quantity: int) -> Vehicle | None:
+    """Atomically add `quantity` units; returns None when the car does not exist."""
+    stmt = (
+        update(Vehicle)
+        .where(Vehicle.id == vehicle_id)
+        .values(quantity=Vehicle.quantity + quantity)
+        .returning(Vehicle)
+        .execution_options(synchronize_session=False, populate_existing=True)
+    )
+    return db.scalars(stmt).one_or_none()

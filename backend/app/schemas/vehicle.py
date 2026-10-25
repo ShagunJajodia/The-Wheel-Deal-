@@ -39,6 +39,10 @@ class VehiclePurchase(BaseModel):
     quantity: int = Field(default=1, ge=1)
 
 
+class VehicleRestock(BaseModel):
+    quantity: int = Field(ge=1)
+
+
 class VehicleRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
