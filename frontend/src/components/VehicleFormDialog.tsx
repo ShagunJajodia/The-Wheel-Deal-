@@ -274,9 +274,9 @@ export function VehicleFormDialog({ vehicle, onClose, onSaved }: VehicleFormDial
           )}
         </FormField>
 
-        <fieldset className="space-y-4 border-t border-stone-200 pt-4">
-          <legend className="pr-2 text-sm font-bold text-stone-900">Specifications</legend>
-          <p className="-mt-2 text-xs text-stone-500">Optional. Leave a field blank to leave it out.</p>
+        <fieldset className="space-y-4 border-t border-stone-200 pt-4 dark:border-stone-800">
+          <legend className="pr-2 text-sm font-bold text-stone-900 dark:text-stone-100">Specifications</legend>
+          <p className="-mt-2 text-xs text-stone-500 dark:text-stone-400">Optional. Leave a field blank to leave it out.</p>
           <div className="grid gap-4 sm:grid-cols-2">
             <FormField label="Fuel type" name="fuel_type" error={errors.fuel_type}>
               {(control) => (
@@ -343,7 +343,7 @@ export function VehicleFormDialog({ vehicle, onClose, onSaved }: VehicleFormDial
         </fieldset>
 
         {formError && (
-          <p role="alert" className="rounded-xl bg-red-50 p-3 text-sm text-red-700">
+          <p role="alert" className="rounded-xl bg-red-50 p-3 text-sm text-red-700 dark:bg-red-950 dark:text-red-300">
             {formError}
           </p>
         )}

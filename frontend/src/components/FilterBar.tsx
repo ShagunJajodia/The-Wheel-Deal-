@@ -8,7 +8,7 @@ import { formatINR } from "../lib/format";
 function PriceEcho({ value }: { value: string }) {
   const amount = Number(value);
   if (value.trim() === "" || !Number.isFinite(amount)) return null;
-  return <span className="mt-1 block text-xs font-normal text-stone-500">{formatINR(amount)}</span>;
+  return <span className="mt-1 block text-xs font-normal text-stone-500 dark:text-stone-400">{formatINR(amount)}</span>;
 }
 
 interface FilterBarProps {
@@ -102,18 +102,18 @@ export function FilterBar({ open = false, onClose = () => undefined }: FilterBar
     setParams({}, { replace: true });
   }
 
-  const label = "block text-sm font-semibold text-stone-700";
+  const label = "block text-sm font-semibold text-stone-700 dark:text-stone-300";
   const panel = open
-    ? "fixed inset-y-0 left-0 z-50 flex w-[88%] max-w-sm flex-col gap-5 overflow-y-auto bg-white p-5 shadow-2xl md:static md:z-auto md:block md:w-auto md:max-w-none md:overflow-visible md:rounded-2xl md:border md:border-stone-200 md:shadow-sm"
-    : "hidden rounded-2xl border border-stone-200 bg-white p-5 shadow-sm md:block";
+    ? "fixed inset-y-0 left-0 z-50 flex w-[88%] max-w-sm flex-col gap-5 overflow-y-auto bg-white p-5 shadow-2xl md:static md:z-auto md:block md:w-auto md:max-w-none md:overflow-visible md:rounded-2xl md:border md:border-stone-200 md:bg-stone-50 md:shadow-sm dark:bg-stone-900 dark:md:border-stone-800 dark:md:bg-stone-900"
+    : "hidden rounded-2xl border border-stone-200 bg-stone-50 p-5 shadow-sm md:block dark:border-stone-800 dark:bg-stone-900";
 
   return (
     <>
       {open && <div aria-hidden="true" onClick={onClose} className="fixed inset-0 z-40 bg-stone-950/55 md:hidden" />}
       <section aria-label="Vehicle filters" className={panel}>
         <div className="flex items-center justify-between md:hidden">
-          <h2 className="text-xl font-bold text-stone-950">Filters</h2>
-          <button ref={closeButton} type="button" onClick={onClose} aria-label="Close filters" className="-mr-2 rounded-lg p-2 text-stone-500 hover:bg-stone-100 hover:text-stone-900">
+          <h2 className="text-xl font-bold text-stone-950 dark:text-stone-50">Filters</h2>
+          <button ref={closeButton} type="button" onClick={onClose} aria-label="Close filters" className="-mr-2 rounded-lg p-2 text-stone-500 hover:bg-stone-100 hover:text-stone-900 dark:text-stone-400 dark:hover:bg-stone-800 dark:hover:text-stone-100">
             <svg viewBox="0 0 20 20" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
               <path d="M5 5l10 10M15 5L5 15" />
             </svg>
@@ -124,7 +124,7 @@ export function FilterBar({ open = false, onClose = () => undefined }: FilterBar
           <label className={label}>Model<input aria-label="Model" value={model} onChange={(event) => { pending.current = true; setModel(event.target.value); }} placeholder="e.g. Nexon" className="input mt-1.5 font-normal" /></label>
           <label className={label}>Min price<input aria-label="Min price" type="number" inputMode="numeric" min="0" value={minPrice} onChange={(event) => { pending.current = true; setMinPrice(event.target.value); }} aria-invalid={rangeError ? "true" : undefined} aria-describedby={rangeError ? rangeErrorId : undefined} placeholder="₹ Min" className="input mt-1.5 font-normal" /><PriceEcho value={minPrice} /></label>
           <label className={label}>Max price<input aria-label="Max price" type="number" inputMode="numeric" min="0" value={maxPrice} onChange={(event) => { pending.current = true; setMaxPrice(event.target.value); }} aria-invalid={rangeError ? "true" : undefined} aria-describedby={rangeError ? rangeErrorId : undefined} placeholder="₹ Max" className="input mt-1.5 font-normal" /><PriceEcho value={maxPrice} /></label>
-          {rangeError && <p id={rangeErrorId} role="alert" className="text-sm text-red-600 md:col-span-4">{rangeError}</p>}
+          {rangeError && <p id={rangeErrorId} role="alert" className="text-sm text-red-600 md:col-span-4 dark:text-red-400">{rangeError}</p>}
         </div>
         <div className="flex flex-wrap gap-2 md:mt-5" role="group" aria-label="Categories">
           {CATEGORIES.map((item) => (
@@ -133,7 +133,7 @@ export function FilterBar({ open = false, onClose = () => undefined }: FilterBar
               type="button"
               aria-pressed={category === item}
               onClick={() => update("category", category === item ? "" : item)}
-              className={`rounded-full border px-4 py-2 text-sm font-semibold transition-colors ${category === item ? "border-stone-900 bg-stone-900 text-white" : "border-stone-300 bg-white text-stone-700 hover:bg-stone-100"}`}
+              className={`rounded-full border px-4 py-2 text-sm font-semibold transition-colors ${category === item ? "border-stone-900 bg-stone-900 text-white dark:border-stone-100 dark:bg-stone-100 dark:text-stone-950" : "border-stone-300 bg-white text-stone-700 hover:bg-stone-100 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-300 dark:hover:bg-stone-700"}`}
             >
               {item.toUpperCase()}
             </button>

@@ -1,6 +1,7 @@
 import { Link, Outlet, Route, Routes, useNavigate } from "react-router";
 import { AuthProvider, useAuth } from "./auth/AuthContext";
 import { ProtectedRoute } from "./auth/ProtectedRoute";
+import { ThemeToggle } from "./components/ThemeToggle";
 import { Wordmark } from "./components/Wordmark";
 import { DashboardPage } from "./pages/DashboardPage";
 import { LoginPage } from "./pages/LoginPage";
@@ -10,8 +11,8 @@ function Shell() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   return (
-    <div className="min-h-screen bg-page">
-      <header className="on-dark sticky top-0 z-30 bg-showroom text-white">
+    <div className="min-h-screen bg-page dark:bg-stone-950">
+      <header className="on-dark sticky top-0 z-30 bg-showroom text-white dark:border-b dark:border-stone-800">
         <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6" aria-label="Main">
           <Link to="/" className="rounded-lg">
             <Wordmark />
@@ -27,6 +28,7 @@ function Shell() {
                 )}
               </span>
             )}
+            <ThemeToggle />
             <button
               type="button"
               onClick={() => {
@@ -47,9 +49,9 @@ function Shell() {
 
 function NotFound() {
   return (
-    <main className="grid min-h-screen place-items-center bg-page px-4">
+    <main className="grid min-h-screen place-items-center bg-page px-4 dark:bg-stone-950">
       <div className="text-center">
-        <h1 className="text-5xl font-extrabold text-stone-950">Page not found</h1>
+        <h1 className="text-5xl font-extrabold text-stone-950 dark:text-stone-50">Page not found</h1>
         <Link to="/" className="btn btn-primary mt-6">
           Back to vehicles
         </Link>

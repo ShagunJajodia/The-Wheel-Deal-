@@ -73,7 +73,7 @@ export function Modal({ title, onClose, children, role = "dialog", variant = "di
 
   return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-stone-950/60 sm:items-center sm:p-4"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-stone-950/60 sm:items-center sm:p-4 dark:bg-black/70"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) onClose();
       }}
@@ -87,8 +87,8 @@ export function Modal({ title, onClose, children, role = "dialog", variant = "di
         onKeyDown={trapTab}
         className={
           sheet
-            ? "h-full w-full max-w-3xl overflow-y-auto bg-white shadow-2xl outline-none sm:h-auto sm:max-h-[92vh] sm:rounded-2xl"
-            : "max-h-full w-full max-w-lg overflow-y-auto rounded-t-3xl bg-white p-6 shadow-2xl outline-none sm:rounded-2xl"
+            ? "h-full w-full max-w-3xl overflow-y-auto bg-white shadow-2xl outline-none sm:h-auto sm:max-h-[92vh] sm:rounded-2xl dark:bg-stone-900 dark:sm:border dark:sm:border-stone-800"
+            : "max-h-full w-full max-w-lg overflow-y-auto rounded-t-3xl bg-white p-6 shadow-2xl outline-none sm:rounded-2xl dark:border dark:border-stone-800 dark:bg-stone-900"
         }
       >
         {sheet ? (
@@ -101,7 +101,7 @@ export function Modal({ title, onClose, children, role = "dialog", variant = "di
                 type="button"
                 onClick={onClose}
                 aria-label="Close"
-                className="m-3 grid h-10 w-10 place-items-center rounded-full bg-white/90 text-stone-800 shadow-md hover:bg-white"
+                className="m-3 grid h-10 w-10 place-items-center rounded-full bg-white/90 text-stone-800 shadow-md hover:bg-white dark:bg-stone-900/90 dark:text-stone-100 dark:hover:bg-stone-900"
               >
                 {closeIcon}
               </button>
@@ -109,14 +109,14 @@ export function Modal({ title, onClose, children, role = "dialog", variant = "di
           </>
         ) : (
           <div className="flex items-start justify-between gap-4">
-            <h2 id={titleId} className="text-xl font-bold text-stone-950">
+            <h2 id={titleId} className="text-xl font-bold text-stone-950 dark:text-stone-50">
               {title}
             </h2>
             <button
               type="button"
               onClick={onClose}
               aria-label="Close"
-              className="-mr-2 -mt-2 rounded-lg p-2 text-stone-500 hover:bg-stone-100 hover:text-stone-900"
+              className="-mr-2 -mt-2 rounded-lg p-2 text-stone-500 hover:bg-stone-100 hover:text-stone-900 dark:text-stone-400 dark:hover:bg-stone-800 dark:hover:text-stone-100"
             >
               {closeIcon}
             </button>

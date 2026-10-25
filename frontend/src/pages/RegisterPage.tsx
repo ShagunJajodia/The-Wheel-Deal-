@@ -47,7 +47,7 @@ export function RegisterPage() {
       footer={
         <>
           Already registered?{" "}
-          <Link className="font-bold text-stone-950 underline underline-offset-4" to="/login">
+          <Link className="font-bold text-stone-950 underline dark:text-stone-50 underline-offset-4" to="/login">
             Sign in
           </Link>
         </>
@@ -90,7 +90,7 @@ export function RegisterPage() {
           )}
         </FormField>
         {errors.server && (
-          <p role="alert" className="rounded-xl bg-red-50 p-3 text-sm text-red-700">
+          <p role="alert" className="rounded-xl bg-red-50 p-3 text-sm text-red-700 dark:bg-red-950 dark:text-red-300">
             {errors.server}
           </p>
         )}

@@ -160,7 +160,7 @@ const hasSpecs = (vehicle: Vehicle) =>
 function StockState({ quantity }: { quantity: number }) {
   if (quantity === 0) {
     return (
-      <p className="flex items-center gap-2 text-sm font-medium text-stone-500">
+      <p className="flex items-center gap-2 text-sm font-medium text-stone-500 dark:text-stone-400">
         <span className="h-2 w-2 rounded-full bg-stone-400" aria-hidden="true" />
         Sold out
       </p>
@@ -168,14 +168,14 @@ function StockState({ quantity }: { quantity: number }) {
   }
   if (quantity <= 3) {
     return (
-      <p className="flex items-center gap-2 text-sm font-semibold text-red-700">
+      <p className="flex items-center gap-2 text-sm font-semibold text-red-700 dark:text-red-400">
         <span className="h-2 w-2 rounded-full bg-red-600" aria-hidden="true" />
         <span>Only {quantity} left</span>
       </p>
     );
   }
   return (
-    <p className="flex items-center gap-2 text-sm font-medium text-stone-600">
+    <p className="flex items-center gap-2 text-sm font-medium text-stone-600 dark:text-stone-400">
       <span className="h-2 w-2 rounded-full bg-emerald-500" aria-hidden="true" />
       {quantity} in stock
     </p>
@@ -207,7 +207,7 @@ export function VehicleDetailDialog({
 
   return (
     <Modal title={`${vehicle.year} ${vehicle.make} ${vehicle.model}`} onClose={onClose} variant="sheet">
-      <div className="relative aspect-video overflow-hidden bg-stone-200 sm:rounded-t-2xl">
+      <div className="relative aspect-video overflow-hidden bg-stone-200 sm:rounded-t-2xl dark:bg-stone-800">
         {vehicle.image_url && !imageFailed ? (
           <img
             src={vehicle.image_url}
@@ -227,53 +227,53 @@ export function VehicleDetailDialog({
       <div className="space-y-6 p-5 sm:p-6">
         <div>
           <div className="flex items-center justify-between gap-3">
-            <p className="text-sm font-medium text-stone-500">
+            <p className="text-sm font-medium text-stone-500 dark:text-stone-400">
               {vehicle.year} · {vehicle.make}
             </p>
             {vehicle.stock_id && (
-              <span className="rounded bg-stone-100 px-1.5 py-0.5 font-mono text-[11px] font-medium text-stone-600">
+              <span className="rounded bg-stone-200 px-1.5 py-0.5 font-mono text-[11px] font-medium text-stone-700 dark:bg-stone-800 dark:text-stone-300">
                 {vehicle.stock_id}
               </span>
             )}
           </div>
-          <h3 className="mt-0.5 break-words text-3xl font-extrabold leading-tight text-stone-950">{vehicle.model}</h3>
+          <h3 className="mt-0.5 break-words text-3xl font-extrabold leading-tight text-stone-950 dark:text-stone-50">{vehicle.model}</h3>
           <div className="mt-3 flex flex-wrap items-center justify-between gap-x-6 gap-y-2">
-            <p className="text-3xl font-bold tabular-nums text-accent-ink">{formatINR(vehicle.price)}</p>
+            <p className="text-3xl font-bold tabular-nums text-accent-ink dark:text-amber-400">{formatINR(vehicle.price)}</p>
             <StockState quantity={vehicle.quantity} />
           </div>
           {vehicle.location && (
-            <p className="mt-3 flex items-center gap-1.5 text-sm text-stone-600">
+            <p className="mt-3 flex items-center gap-1.5 text-sm text-stone-600 dark:text-stone-400">
               <SpecIcon name="pin" className="h-4 w-4 shrink-0" />
               <span>{vehicle.location}</span>
             </p>
           )}
         </div>
 
-        {vehicle.description && <p className="leading-relaxed text-stone-700">{vehicle.description}</p>}
+        {vehicle.description && <p className="leading-relaxed text-stone-700 dark:text-stone-300">{vehicle.description}</p>}
 
         <section aria-labelledby={`specs-${vehicle.id}`}>
-          <h4 id={`specs-${vehicle.id}`} className="font-display text-lg font-bold text-stone-950">
+          <h4 id={`specs-${vehicle.id}`} className="font-display text-lg font-bold text-stone-950 dark:text-stone-50">
             Specifications
           </h4>
           {hasSpecs(vehicle) ? (
             <dl className="mt-3 grid grid-cols-2 gap-3 md:grid-cols-3">
               {tiles.map((tile) => (
-                <div key={tile.label} className="min-w-0 rounded-xl border border-stone-200 bg-stone-50 p-3.5">
-                  <dt className="flex items-center gap-2 text-xs font-medium text-stone-500">
-                    <SpecIcon name={tile.icon} className="h-4 w-4 shrink-0 text-stone-500" />
+                <div key={tile.label} className="min-w-0 rounded-xl border border-stone-200 bg-stone-100 p-3.5 dark:border-stone-700 dark:bg-stone-800">
+                  <dt className="flex items-center gap-2 text-xs font-medium text-stone-600 dark:text-stone-400">
+                    <SpecIcon name={tile.icon} className="h-4 w-4 shrink-0 text-stone-600 dark:text-stone-400" />
                     {tile.label}
                   </dt>
-                  <dd className="mt-1.5 break-words text-sm font-semibold text-stone-900">{tile.value}</dd>
+                  <dd className="mt-1.5 break-words text-sm font-semibold text-stone-900 dark:text-stone-100">{tile.value}</dd>
                 </div>
               ))}
             </dl>
           ) : (
-            <p className="mt-2 text-sm text-stone-500">Specifications coming soon.</p>
+            <p className="mt-2 text-sm text-stone-600 dark:text-stone-400">Specifications coming soon.</p>
           )}
         </section>
       </div>
 
-      <div className="sticky bottom-0 space-y-3 border-t border-stone-200 bg-white p-4 sm:px-6">
+      <div className="sticky bottom-0 space-y-3 border-t border-stone-200 bg-white p-4 sm:px-6 dark:border-stone-800 dark:bg-stone-900">
         {notice}
         <div className="flex flex-wrap items-center gap-3">
           <button
@@ -295,7 +295,7 @@ export function VehicleDetailDialog({
               <button
                 type="button"
                 onClick={() => admin.onDelete(vehicle)}
-                className="btn btn-secondary text-red-700 enabled:hover:bg-red-50"
+                className="btn btn-secondary text-red-700 enabled:hover:bg-red-50 dark:text-red-400 dark:enabled:hover:bg-red-950"
               >
                 Delete
               </button>

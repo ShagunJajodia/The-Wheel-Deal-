@@ -21,9 +21,9 @@ export function ConfirmDialog({
 }: ConfirmDialogProps) {
   return (
     <Modal title={title} role="alertdialog" onClose={busy ? () => undefined : onCancel}>
-      {message && <p className="mt-3 text-sm text-stone-600">{message}</p>}
+      {message && <p className="mt-3 text-sm text-stone-600 dark:text-stone-400">{message}</p>}
       {error && (
-        <p role="alert" className="mt-4 rounded-xl bg-red-50 p-3 text-sm text-red-700">
+        <p role="alert" className="mt-4 rounded-xl bg-red-50 p-3 text-sm text-red-700 dark:bg-red-950 dark:text-red-300">
           {error}
         </p>
       )}

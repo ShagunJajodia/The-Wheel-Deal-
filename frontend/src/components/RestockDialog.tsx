@@ -43,7 +43,7 @@ export function RestockDialog({ vehicle, onClose, onSaved }: RestockDialogProps)
 
   return (
     <Modal title={`Restock ${label}`} onClose={restock.isPending ? () => undefined : onClose}>
-      <p className="mt-2 text-sm text-stone-600">Currently {vehicle.quantity} in stock.</p>
+      <p className="mt-2 text-sm text-stone-600 dark:text-stone-400">Currently {vehicle.quantity} in stock.</p>
       <form onSubmit={submit} noValidate className="mt-5 space-y-4">
         <FormField label="Quantity to add" name="quantity" error={error ?? undefined}>
           {(control) => (
@@ -63,7 +63,7 @@ export function RestockDialog({ vehicle, onClose, onSaved }: RestockDialogProps)
           )}
         </FormField>
         {formError && (
-          <p role="alert" className="rounded-xl bg-red-50 p-3 text-sm text-red-700">
+          <p role="alert" className="rounded-xl bg-red-50 p-3 text-sm text-red-700 dark:bg-red-950 dark:text-red-300">
             {formError}
           </p>
         )}
