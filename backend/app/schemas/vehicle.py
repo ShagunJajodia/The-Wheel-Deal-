@@ -1,9 +1,19 @@
-from datetime import datetime
+from datetime import date, datetime
 from decimal import Decimal
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from app.models.vehicle import VehicleCategory
+
+MIN_VEHICLE_YEAR = 1886  # first production automobile
+NON_NULLABLE_UPDATE_FIELDS = frozenset({"make", "model", "year", "category", "price"})
+
+
+def validate_vehicle_year(value: int | None) -> int | None:
+    max_year = date.today().year + 1
+    if value is not None and not MIN_VEHICLE_YEAR <= value <= max_year:
+        raise ValueError(f"year must be between {MIN_VEHICLE_YEAR} and {max_year}")
+    return value
 
 
 class VehicleCreate(BaseModel):
@@ -15,6 +25,12 @@ class VehicleCreate(BaseModel):
     quantity: int = Field(ge=0)
     image_url: str | None = Field(default=None, max_length=2048)
     description: str | None = None
+
+    @field_validator("year")
+    @classmethod
+    def check_year(cls, value: int) -> int:
+        validate_vehicle_year(value)
+        return value
 
 
 class VehicleUpdate(BaseModel):
@@ -28,10 +44,26 @@ class VehicleUpdate(BaseModel):
     image_url: str | None = Field(default=None, max_length=2048)
     description: str | None = None
 
+    @field_validator("year")
+    @classmethod
+    def check_year(cls, value: int | None) -> int | None:
+        return validate_vehicle_year(value)
+
     @model_validator(mode="after")
     def validate_non_empty(self) -> "VehicleUpdate":
         if not self.model_fields_set:
             raise ValueError("At least one field must be provided for update")
+        return self
+
+    @model_validator(mode="after")
+    def reject_null_required_fields(self) -> "VehicleUpdate":
+        nulled = sorted(
+            field
+            for field in self.model_fields_set & NON_NULLABLE_UPDATE_FIELDS
+            if getattr(self, field) is None
+        )
+        if nulled:
+            raise ValueError(f"{', '.join(nulled)} cannot be null")
         return self
 
 
