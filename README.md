@@ -379,7 +379,7 @@ Mobile layout:
 
 ## My AI Usage
 
-I built this with several AI tools and kept the TDD rules in `AGENTS.md` for all of them. Each commit's co-author trailer records which tool made it.
+I built this with several AI tools and kept the TDD rules in `AGENTS.md` for all of them. Each commit's co-author trailer records which tool made it. Every prompt I gave the tools is in [PROMPTS.md](PROMPTS.md), copied verbatim from their logs.
 
 - **Claude (Claude Code desktop app)** planned the build order, drafted the prompts for Codex, wrote `AGENTS.md` and the `.codex/agents` config, installed and configured PostgreSQL, diagnosed a psycopg/libpq import error, and checked Codex's commits.
 - **OpenAI Codex (desktop app, GPT-6 Sol)** wrote the first part of the code in red/green commits: the skeleton, registration, login/JWT and the first vehicle tests, plus the first version of the frontend. Its `test-runner` sub-agent (GPT-6 Luna) ran the tests, and its `reviewer` sub-agent caught the PostgreSQL 18 Docker volume path and a malformed-email validation gap. The backend and frontend were built in parallel against a written API contract.
