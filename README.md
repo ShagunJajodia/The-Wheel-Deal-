@@ -7,7 +7,9 @@ A car dealership inventory app: a FastAPI + PostgreSQL backend and a React + Typ
 ## Features
 
 - Register and sign in. Accounts are either `user` or `admin`.
-- Browse the inventory as cards. Sold-out cars stay visible with a disabled "Sold out" button; low stock (1 to 3) shows "Only N left".
+- Browse the inventory as cards, each tagged with a unique stock number (e.g. `WD-00013`). Sold-out cars stay visible with a disabled "Sold out" button; low stock (1 to 3) shows "Only N left".
+- Click any car for a detail sheet: large photo, price, stock state, showroom location, and a spec grid (fuel, transmission, engine or battery, power, torque, drivetrain, seating, mileage or range, colour). The open car is in the URL (`?car=13`), so it can be shared, and Back closes it.
+- Light and dark mode: a header toggle that follows the system setting by default, remembers the choice, and never flashes the wrong theme on load.
 - Search by make and model (case-insensitive, partial match), category, and a price range. Filters live in the URL, so a filtered view can be bookmarked or shared.
 - Any signed-in user can purchase a car. Stock is decremented atomically, so two buyers cannot take the last unit.
 - Seeded cars come with photos (Wikimedia Commons, freely licensed, credited in [docs/IMAGE_CREDITS.md](docs/IMAGE_CREDITS.md)); cars without an image show a placeholder.
@@ -300,7 +302,7 @@ Base path `/api`. "user" means any signed-in user (admins included); protected e
 | POST | `/api/vehicles/{id}/purchase` | user | 200 updated vehicle. Optional body `{"quantity": n}` with `n >= 1`, default 1 | 401; 404; 409 not enough stock; 422 invalid quantity |
 | POST | `/api/vehicles/{id}/restock` | admin | 200 updated vehicle. Body `{"quantity": n}` required, `n >= 1` | 401; 403; 404; 422 |
 
-A vehicle is `id`, `make`, `model`, `year`, `category`, `price`, `quantity`, `image_url`, `description`, `created_at`, `updated_at`. `price` is a JSON string such as `"1250000.00"`. `category` is one of `sedan`, `suv`, `hatchback`, `coupe`, `convertible`, `truck`, `van`, `ev`.
+A vehicle is `id`, `make`, `model`, `year`, `category`, `price`, `quantity`, `image_url`, `description`, the optional specs `fuel_type` (`petrol`, `diesel`, `electric`, `hybrid`, `cng`), `transmission`, `engine`, `power`, `torque`, `drivetrain` (`fwd`, `rwd`, `awd`, `4wd`), `seats` (1 to 12), `mileage`, `color` and the showroom `location`, plus `created_at`, `updated_at` and a read-only `stock_id` (`WD-` and the zero-padded id, e.g. `WD-00013`). POST and PUT accept the spec fields; `stock_id` and `quantity` in a PUT body are a 422. `price` is a JSON string such as `"1250000.00"`. `category` is one of `sedan`, `suv`, `hatchback`, `coupe`, `convertible`, `truck`, `van`, `ev`.
 
 ## Design decisions
 
@@ -350,9 +352,21 @@ Sign in:
 
 ![Login page](docs/screenshots/login.png)
 
-Dashboard with the full inventory:
+Dashboard (light mode):
 
 ![Dashboard](docs/screenshots/dashboard.png)
+
+Dashboard (dark mode):
+
+![Dashboard in dark mode](docs/screenshots/dashboard-dark.png)
+
+Car detail sheet with specs and showroom location:
+
+![Car detail sheet](docs/screenshots/detail.png)
+
+Car detail sheet (dark mode):
+
+![Car detail sheet in dark mode](docs/screenshots/detail-dark.png)
 
 Filtered results (filters are in the URL):
 
@@ -369,6 +383,10 @@ Admin edit modal (no quantity field; stock changes only through purchase and res
 Mobile layout:
 
 ![Mobile layout](docs/screenshots/mobile.png)
+
+Detail sheet on a phone:
+
+![Mobile detail sheet](docs/screenshots/mobile-detail.png)
 
 ## My AI Usage
 
