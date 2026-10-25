@@ -136,6 +136,44 @@ describe("FilterBar", () => {
     expect(min.getAttribute("aria-invalid")).not.toBe("true");
   });
 
+  it("keeps the last valid price range in the URL while a half-typed max is below min", () => {
+    vi.useFakeTimers();
+    render(
+      <MemoryRouter initialEntries={["/?min_price=1000000&max_price=1500000"]}>
+        <FilterBar />
+        <QueryProbe />
+      </MemoryRouter>,
+    );
+    const query = () => new URLSearchParams(screen.getByTestId("query").textContent ?? "");
+    const max = screen.getByLabelText("Max price");
+
+    fireEvent.change(max, { target: { value: "2" } });
+    act(() => vi.advanceTimersByTime(300));
+
+    expect(query().get("min_price")).toBe("1000000");
+    expect(query().get("max_price")).toBe("1500000");
+    expect(screen.getByText(/min price must not be higher than max price/i)).toBeTruthy();
+
+    fireEvent.change(max, { target: { value: "2000000" } });
+    act(() => vi.advanceTimersByTime(300));
+
+    expect(query().get("max_price")).toBe("2000000");
+  });
+
+  it("shows the typed prices in rupees so the unit is clear", () => {
+    render(
+      <MemoryRouter>
+        <FilterBar />
+      </MemoryRouter>,
+    );
+
+    fireEvent.change(screen.getByLabelText("Min price"), { target: { value: "1500000" } });
+    fireEvent.change(screen.getByLabelText("Max price"), { target: { value: "25" } });
+
+    expect(screen.getByText("₹15,00,000")).toBeTruthy();
+    expect(screen.getByText("₹25")).toBeTruthy();
+  });
+
   it("empties the price inputs when filters are cleared elsewhere", () => {
     render(
       <MemoryRouter initialEntries={["/?min_price=100&max_price=900"]}>
