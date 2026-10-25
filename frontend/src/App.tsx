@@ -1,13 +1,47 @@
 import { Link, Outlet, Route, Routes, useNavigate } from "react-router";
 import { AuthProvider, useAuth } from "./auth/AuthContext";
 import { ProtectedRoute } from "./auth/ProtectedRoute";
+import { CartProvider, useCart } from "./cart/CartContext";
 import { Wordmark } from "./components/Wordmark";
 import { DashboardPage } from "./pages/DashboardPage";
 import { LoginPage } from "./pages/LoginPage";
 import { RegisterPage } from "./pages/RegisterPage";
 
+function CartButton() {
+  const { count, openCart } = useCart();
+  return (
+    <button
+      type="button"
+      onClick={openCart}
+      aria-label={`Cart, ${count} ${count === 1 ? "item" : "items"}`}
+      className="btn btn-dark relative px-3 py-2"
+    >
+      <svg viewBox="0 0 20 20" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <path d="M2.5 3.5h2.2l1.9 8.6h8l1.5-6H5.4" />
+        <circle cx="7.5" cy="15.5" r="1.2" />
+        <circle cx="14" cy="15.5" r="1.2" />
+      </svg>
+      {count > 0 && (
+        <span aria-hidden="true" className="absolute -right-1 -top-1 grid min-w-5 place-items-center rounded-full bg-white px-1 text-[11px] font-bold leading-5 text-stone-950">
+          {count}
+        </span>
+      )}
+    </button>
+  );
+}
+
 function Shell() {
+  const { user } = useAuth();
+  return (
+    <CartProvider key={user?.id ?? "anon"} userId={user?.id ?? null}>
+      <ShellFrame />
+    </CartProvider>
+  );
+}
+
+function ShellFrame() {
   const { user, logout } = useAuth();
+  const { clear } = useCart();
   const navigate = useNavigate();
   return (
     <div className="min-h-screen bg-page">
@@ -27,9 +61,11 @@ function Shell() {
                 )}
               </span>
             )}
+            <CartButton />
             <button
               type="button"
               onClick={() => {
+                clear();
                 logout();
                 navigate("/login");
               }}

@@ -1,9 +1,11 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { keepPreviousData, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSearchParams } from "react-router";
 import { ApiError, api } from "../api/client";
 import type { Vehicle, VehicleFilters } from "../api/client";
 import { useAuth } from "../auth/AuthContext";
+import { CartDrawer } from "../cart/CartDrawer";
+import { useCart } from "../cart/CartContext";
 import { ConfirmDialog } from "../components/ConfirmDialog";
 import { FilterBar } from "../components/FilterBar";
 import { RestockDialog } from "../components/RestockDialog";
@@ -43,6 +45,11 @@ export function DashboardPage() {
     placeholderData: keepPreviousData,
   });
   const queryClient = useQueryClient();
+  const { syncVehicles } = useCart();
+  // Keep cart lines in step with the latest stock and prices we have fetched.
+  useEffect(() => {
+    if (vehicles.data) syncVehicles(vehicles.data);
+  }, [vehicles.data, syncVehicles]);
   // Every purchase in flight. The ref guards against two clicks in the same tick, before React re-renders.
   const [purchasing, setPurchasing] = useState<ReadonlySet<number>>(() => new Set());
   const purchasingRef = useRef(new Set<number>());
@@ -243,6 +250,10 @@ export function DashboardPage() {
           ))}
         </div>
       )}
+
+      <CartDrawer
+        onOrdered={(cars) => setNotice({ message: `Order placed: ${cars} ${cars === 1 ? "car" : "cars"}.`, error: false })}
+      />
 
       {isAdmin && dialog?.kind === "add" && <VehicleFormDialog onClose={closeDialog} onSaved={saved} />}
       {isAdmin && dialog?.kind === "edit" && (
