@@ -27,9 +27,9 @@ def search_vehicles(
 ) -> list[Vehicle]:
     stmt = select(Vehicle)
     if make:
-        stmt = stmt.where(Vehicle.make.ilike(f"%{make}%"))
+        stmt = stmt.where(Vehicle.make.icontains(make, autoescape=True))
     if model:
-        stmt = stmt.where(Vehicle.model.ilike(f"%{model}%"))
+        stmt = stmt.where(Vehicle.model.icontains(model, autoescape=True))
     if category is not None:
         stmt = stmt.where(Vehicle.category == category)
     if min_price is not None:

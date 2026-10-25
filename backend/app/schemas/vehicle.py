@@ -95,8 +95,8 @@ class VehicleSearchParams(BaseModel):
     make: str | None = None
     model: str | None = None
     category: VehicleCategory | None = None
-    min_price: Decimal | None = Field(default=None, ge=0)
-    max_price: Decimal | None = Field(default=None, ge=0)
+    min_price: Decimal | None = Field(default=None, ge=0, max_digits=10, decimal_places=2)
+    max_price: Decimal | None = Field(default=None, ge=0, max_digits=10, decimal_places=2)
 
     @model_validator(mode="after")
     def validate_price_range(self) -> "VehicleSearchParams":

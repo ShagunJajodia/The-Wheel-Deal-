@@ -56,7 +56,8 @@ class UserRead(BaseModel):
 
 class LoginRequest(BaseModel):
     email: str
-    password: str
+    # Generous cap only; bcrypt's 72-byte limit is enforced in login_user so it stays a 401.
+    password: str = Field(max_length=1024)
 
 
 class TokenRead(BaseModel):

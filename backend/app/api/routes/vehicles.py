@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, Depends, Path, Query, status
 from sqlalchemy.orm import Session
 
 from app.api.dependencies import get_current_user, require_admin
@@ -26,6 +26,9 @@ from app.services.vehicle import (
 )
 
 router = APIRouter()
+
+# Postgres INTEGER range; anything else cannot exist and would otherwise surface as a 500.
+VehicleId = Annotated[int, Path(ge=1, le=2_147_483_647)]
 
 
 @router.post("", response_model=VehicleRead, status_code=status.HTTP_201_CREATED)
@@ -56,7 +59,7 @@ def search(
 
 @router.get("/{vehicle_id}", response_model=VehicleRead)
 def detail(
-    vehicle_id: int,
+    vehicle_id: VehicleId,
     db: Annotated[Session, Depends(get_db)],
     _user: Annotated[User, Depends(get_current_user)],
 ) -> VehicleRead:
@@ -65,7 +68,7 @@ def detail(
 
 @router.put("/{vehicle_id}", response_model=VehicleRead)
 def update(
-    vehicle_id: int,
+    vehicle_id: VehicleId,
     data: VehicleUpdate,
     db: Annotated[Session, Depends(get_db)],
     _admin: Annotated[User, Depends(require_admin)],
@@ -75,7 +78,7 @@ def update(
 
 @router.post("/{vehicle_id}/purchase", response_model=VehicleRead)
 def purchase(
-    vehicle_id: int,
+    vehicle_id: VehicleId,
     db: Annotated[Session, Depends(get_db)],
     _user: Annotated[User, Depends(get_current_user)],
     data: VehiclePurchase | None = None,
@@ -86,7 +89,7 @@ def purchase(
 
 @router.post("/{vehicle_id}/restock", response_model=VehicleRead)
 def restock(
-    vehicle_id: int,
+    vehicle_id: VehicleId,
     data: VehicleRestock,
     db: Annotated[Session, Depends(get_db)],
     _admin: Annotated[User, Depends(require_admin)],
@@ -96,7 +99,7 @@ def restock(
 
 @router.delete("/{vehicle_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete(
-    vehicle_id: int,
+    vehicle_id: VehicleId,
     db: Annotated[Session, Depends(get_db)],
     _admin: Annotated[User, Depends(require_admin)],
 ) -> None:

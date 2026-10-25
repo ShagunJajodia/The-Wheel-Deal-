@@ -25,6 +25,7 @@ def get_current_user(
             credentials.credentials,
             get_settings().jwt_secret,
             algorithms=["HS256"],
+            options={"require": ["exp", "sub"]},
         )
         user_id = int(payload["sub"])
     except (jwt.InvalidTokenError, KeyError, TypeError, ValueError) as exc:
