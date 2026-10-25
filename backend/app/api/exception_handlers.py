@@ -7,6 +7,7 @@ from app.core.errors import (
     DomainError,
     EmailAlreadyRegistered,
     InvalidCredentials,
+    OutOfStock,
     VehicleNotFound,
 )
 
@@ -22,4 +23,6 @@ async def handle_domain_error(_request: Request, exc: DomainError) -> JSONRespon
         return JSONResponse(status_code=403, content={"detail": "Admin access required"})
     if isinstance(exc, VehicleNotFound):
         return JSONResponse(status_code=404, content={"detail": "Vehicle not found"})
+    if isinstance(exc, OutOfStock):
+        return JSONResponse(status_code=409, content={"detail": "Not enough stock"})
     return JSONResponse(status_code=400, content={"detail": "Invalid request"})

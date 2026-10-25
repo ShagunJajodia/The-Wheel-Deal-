@@ -8,6 +8,7 @@ from app.db.session import get_db
 from app.models.user import User
 from app.schemas.vehicle import (
     VehicleCreate,
+    VehiclePurchase,
     VehicleRead,
     VehicleSearchParams,
     VehicleUpdate,
@@ -19,6 +20,7 @@ from app.services.vehicle import (
     get_vehicle,
     get_vehicles,
     modify_vehicle,
+    purchase_vehicle,
 )
 
 router = APIRouter()
@@ -67,6 +69,17 @@ def update(
     _admin: Annotated[User, Depends(require_admin)],
 ) -> VehicleRead:
     return modify_vehicle(db, vehicle_id, data)
+
+
+@router.post("/{vehicle_id}/purchase", response_model=VehicleRead)
+def purchase(
+    vehicle_id: int,
+    db: Annotated[Session, Depends(get_db)],
+    _user: Annotated[User, Depends(get_current_user)],
+    data: VehiclePurchase | None = None,
+) -> VehicleRead:
+    quantity = data.quantity if data is not None else 1
+    return purchase_vehicle(db, vehicle_id, quantity)
 
 
 @router.delete("/{vehicle_id}", status_code=status.HTTP_204_NO_CONTENT)

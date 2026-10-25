@@ -1,6 +1,6 @@
 from decimal import Decimal
 
-from sqlalchemy import select
+from sqlalchemy import exists, select, update
 from sqlalchemy.orm import Session
 
 from app.models.vehicle import Vehicle, VehicleCategory
@@ -53,3 +53,19 @@ def update_vehicle_data(_db: Session, vehicle: Vehicle, data: VehicleUpdate) -> 
 
 def remove_vehicle(db: Session, vehicle: Vehicle) -> None:
     db.delete(vehicle)
+
+
+def vehicle_exists(db: Session, vehicle_id: int) -> bool:
+    return bool(db.scalar(select(exists().where(Vehicle.id == vehicle_id))))
+
+
+def decrement_stock(db: Session, vehicle_id: int, quantity: int) -> Vehicle | None:
+    """Atomically take `quantity` units; returns None when the car is missing or short on stock."""
+    stmt = (
+        update(Vehicle)
+        .where(Vehicle.id == vehicle_id, Vehicle.quantity >= quantity)
+        .values(quantity=Vehicle.quantity - quantity)
+        .returning(Vehicle)
+        .execution_options(synchronize_session=False, populate_existing=True)
+    )
+    return db.scalars(stmt).one_or_none()

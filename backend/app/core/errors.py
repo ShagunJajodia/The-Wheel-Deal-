@@ -20,3 +20,7 @@ class AdminRequired(DomainError):
 
 class VehicleNotFound(DomainError):
     pass
+
+
+class OutOfStock(DomainError):
+    pass

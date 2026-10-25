@@ -1,14 +1,16 @@
 from sqlalchemy.orm import Session
 
-from app.core.errors import VehicleNotFound
+from app.core.errors import OutOfStock, VehicleNotFound
 from app.models.vehicle import Vehicle
 from app.repositories.vehicle import (
     add_vehicle,
+    decrement_stock,
     get_vehicle_by_id,
     list_vehicles,
     remove_vehicle,
     search_vehicles,
     update_vehicle_data,
+    vehicle_exists,
 )
 from app.schemas.vehicle import VehicleCreate, VehicleSearchParams, VehicleUpdate
 
@@ -54,3 +56,14 @@ def delete_vehicle(db: Session, vehicle_id: int) -> None:
     vehicle = get_vehicle(db, vehicle_id)
     remove_vehicle(db, vehicle)
     db.commit()
+
+
+def purchase_vehicle(db: Session, vehicle_id: int, quantity: int) -> Vehicle:
+    vehicle = decrement_stock(db, vehicle_id, quantity)
+    if vehicle is None:
+        if not vehicle_exists(db, vehicle_id):
+            raise VehicleNotFound
+        raise OutOfStock
+    db.commit()
+    db.refresh(vehicle)
+    return vehicle
