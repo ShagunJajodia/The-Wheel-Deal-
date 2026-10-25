@@ -47,12 +47,20 @@ interface LoginResponse {
   token_type: string;
 }
 
-type ErrorDetail = string | { loc: Array<string | number>; msg: string }[];
+export interface ValidationIssue {
+  loc: Array<string | number>;
+  msg: string;
+  type?: string;
+}
+
+type ErrorDetail = string | ValidationIssue[];
 
 export class ApiError extends Error {
   constructor(
     public readonly status: number,
     message: string,
+    /** The FastAPI 422 detail array; empty for every other error. */
+    public readonly issues: ValidationIssue[] = [],
   ) {
     super(message);
     this.name = "ApiError";
@@ -97,7 +105,8 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
 
   if (!response.ok) {
     const body = (await response.json().catch(() => ({}))) as { detail?: ErrorDetail };
-    throw new ApiError(response.status, errorMessage(body.detail, response.status));
+    const issues = Array.isArray(body.detail) ? body.detail : [];
+    throw new ApiError(response.status, errorMessage(body.detail, response.status), issues);
   }
 
   if (response.status === 204) return undefined as T;

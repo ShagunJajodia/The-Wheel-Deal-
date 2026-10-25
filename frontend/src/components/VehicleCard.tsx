@@ -1,20 +1,40 @@
 import type { Vehicle } from "../api/client";
+import { CardMenu } from "./CardMenu";
 
 const fallbacks: Record<Vehicle["category"], string> = {
   sedan: "🚘", suv: "🚙", hatchback: "🚗", coupe: "🏎️", convertible: "🏎️", truck: "🛻", van: "🚐", ev: "⚡",
 };
 
-export function VehicleCard({ vehicle, onPurchase, isPurchasing = false }: {
+export interface VehicleCardAdmin {
+  onEdit: (vehicle: Vehicle) => void;
+  onRestock: (vehicle: Vehicle) => void;
+  onDelete: (vehicle: Vehicle) => void;
+}
+
+export function VehicleCard({ vehicle, onPurchase, isPurchasing = false, admin }: {
   vehicle: Vehicle;
   onPurchase: (id: number) => void;
   isPurchasing?: boolean;
+  /** Pass only for admins; omitting it renders no management controls. */
+  admin?: VehicleCardAdmin;
 }) {
   const price = Number(vehicle.price);
+  const label = `${vehicle.year} ${vehicle.make} ${vehicle.model}`;
   return (
     <article className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl">
       <div className="relative flex h-48 items-center justify-center bg-gradient-to-br from-slate-100 to-slate-200 text-7xl">
         {vehicle.image_url ? <img src={vehicle.image_url} alt={`${vehicle.make} ${vehicle.model}`} className="h-full w-full object-cover" /> : <span aria-hidden="true">{fallbacks[vehicle.category]}</span>}
-        <span className="absolute right-4 top-4 rounded-full bg-white/90 px-3 py-1 text-xs font-bold uppercase tracking-wide text-slate-700">{vehicle.category}</span>
+        <span className="absolute left-4 top-4 rounded-full bg-white/90 px-3 py-1 text-xs font-bold uppercase tracking-wide text-slate-700">{vehicle.category}</span>
+        {admin && (
+          <div className="absolute right-3 top-3">
+            <CardMenu
+              label={label}
+              onEdit={() => admin.onEdit(vehicle)}
+              onRestock={() => admin.onRestock(vehicle)}
+              onDelete={() => admin.onDelete(vehicle)}
+            />
+          </div>
+        )}
       </div>
       <div className="p-5">
         <p className="text-sm font-medium text-slate-500">{vehicle.year} · {vehicle.make}</p>
