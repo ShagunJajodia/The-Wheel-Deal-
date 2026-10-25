@@ -5,8 +5,6 @@ from sqlalchemy.exc import DataError
 from app.core.errors import (
     AdminRequired,
     AuthenticationRequired,
-    CheckoutOutOfStock,
-    CheckoutVehicleNotFound,
     DomainError,
     EmailAlreadyRegistered,
     InvalidCredentials,
@@ -30,10 +28,6 @@ async def handle_domain_error(_request: Request, exc: DomainError) -> JSONRespon
         )
     if isinstance(exc, AdminRequired):
         return JSONResponse(status_code=403, content={"detail": "Admin access required"})
-    if isinstance(exc, CheckoutVehicleNotFound):
-        return JSONResponse(status_code=404, content={"detail": str(exc)})
-    if isinstance(exc, CheckoutOutOfStock):
-        return JSONResponse(status_code=409, content={"detail": str(exc)})
     if isinstance(exc, VehicleNotFound):
         return JSONResponse(status_code=404, content={"detail": "Vehicle not found"})
     if isinstance(exc, OutOfStock):

@@ -1,7 +1,6 @@
 import { useState } from "react";
 
 import type { Vehicle } from "../api/client";
-import { useCart } from "../cart/CartContext";
 import { formatINR } from "../lib/format";
 import { CardMenu } from "./CardMenu";
 
@@ -67,8 +66,6 @@ export function VehicleCard({
   admin?: VehicleCardAdmin;
 }) {
   const [imageFailed, setImageFailed] = useState(false);
-  const cart = useCart();
-  const inCart = cart.quantityOf(vehicle.id);
   const soldOut = vehicle.quantity === 0;
   const label = `${vehicle.year} ${vehicle.make} ${vehicle.model}`;
 
@@ -117,25 +114,14 @@ export function VehicleCard({
         <div className="mb-4 mt-2 min-h-6">
           <StockLine quantity={vehicle.quantity} />
         </div>
-        <div className="mt-auto flex flex-col gap-2">
-          <button
-            type="button"
-            disabled={soldOut || isPurchasing}
-            onClick={() => onPurchase(vehicle.id)}
-            className="btn btn-primary w-full py-3 text-base sm:text-sm"
-          >
-            {soldOut ? "Sold out" : isPurchasing ? "Purchasing…" : "Purchase"}
-          </button>
-          <button
-            type="button"
-            disabled={!cart.canAdd(vehicle)}
-            onClick={() => cart.add(vehicle)}
-            title={inCart > 0 && cart.canAdd(vehicle) ? "Add one more to your cart" : undefined}
-            className="btn btn-secondary w-full py-3 text-base sm:text-sm"
-          >
-            {inCart > 0 ? `In cart (${inCart})` : "Add to cart"}
-          </button>
-        </div>
+        <button
+          type="button"
+          disabled={soldOut || isPurchasing}
+          onClick={() => onPurchase(vehicle.id)}
+          className="btn btn-primary mt-auto w-full py-3 text-base sm:text-sm"
+        >
+          {soldOut ? "Sold out" : isPurchasing ? "Purchasing…" : "Purchase"}
+        </button>
       </div>
     </article>
   );

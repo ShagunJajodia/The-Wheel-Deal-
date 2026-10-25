@@ -36,15 +36,6 @@ export type VehicleFilters = Partial<
   Record<"make" | "model" | "category" | "min_price" | "max_price", string>
 >;
 
-export interface CheckoutItem {
-  vehicle_id: number;
-  quantity: number;
-}
-
-export interface CheckoutResponse {
-  items: Vehicle[];
-}
-
 export interface RegisterInput {
   email: string;
   password: string;
@@ -151,8 +142,6 @@ export const api = {
       method: "POST",
       body: json({ quantity }),
     }),
-  checkout: (items: CheckoutItem[]) =>
-    request<CheckoutResponse>("/api/cart/checkout", { method: "POST", body: json({ items }) }),
   createVehicle: (vehicle: VehicleInput) =>
     request<Vehicle>("/api/vehicles", { method: "POST", body: json(vehicle) }),
   updateVehicle: (id: number, vehicle: VehicleUpdate) =>

@@ -10,7 +10,6 @@ A car dealership inventory app: a FastAPI + PostgreSQL backend and a React + Typ
 - Browse the inventory as cards. Sold-out cars stay visible with a disabled "Sold out" button; low stock (1 to 3) shows "Only N left".
 - Search by make and model (case-insensitive, partial match), category, and a price range. Filters live in the URL, so a filtered view can be bookmarked or shared.
 - Any signed-in user can purchase a car. Stock is decremented atomically, so two buyers cannot take the last unit.
-- A shopping cart: add cars from the cards, adjust quantities in a cart drawer, and check out everything in one all-or-nothing order. The cart is kept in the browser per user and cleared on sign-out.
 - Seeded cars come with photos (Wikimedia Commons, freely licensed, credited in [docs/IMAGE_CREDITS.md](docs/IMAGE_CREDITS.md)); cars without an image show a placeholder.
 - Admins can add, edit, delete, and restock vehicles. Admin controls are hidden from normal users in the UI, and every admin endpoint is enforced on the server.
 - Prices are in INR and stored as exact decimals.
@@ -299,7 +298,6 @@ Base path `/api`. "user" means any signed-in user (admins included); protected e
 | PUT | `/api/vehicles/{id}` | admin | 200 updated vehicle. Partial update: send only the fields to change | 401; 403; 404; 422 empty body, unknown field (including `quantity`), explicit `null` for a required field, or an out-of-range value |
 | DELETE | `/api/vehicles/{id}` | admin | 204 no content | 401; 403; 404 |
 | POST | `/api/vehicles/{id}/purchase` | user | 200 updated vehicle. Optional body `{"quantity": n}` with `n >= 1`, default 1 | 401; 404; 409 not enough stock; 422 invalid quantity |
-| POST | `/api/cart/checkout` | user | 200 `{"items": [vehicle, ...]}`. Body `{"items": [{"vehicle_id", "quantity"}]}`, 1 to 20 items, quantity `>= 1` | 401; 404 `Vehicle <id> not found`; 409 `Not enough stock for <year> <make> <model>` (nothing is bought); 422 empty, duplicate ids, or more than 20 items |
 | POST | `/api/vehicles/{id}/restock` | admin | 200 updated vehicle. Body `{"quantity": n}` required, `n >= 1` | 401; 403; 404; 422 |
 
 A vehicle is `id`, `make`, `model`, `year`, `category`, `price`, `quantity`, `image_url`, `description`, `created_at`, `updated_at`. `price` is a JSON string such as `"1250000.00"`. `category` is one of `sedan`, `suv`, `hatchback`, `coupe`, `convertible`, `truck`, `van`, `ev`.
@@ -309,7 +307,6 @@ A vehicle is `id`, `make`, `model`, `year`, `category`, `price`, `quantity`, `im
 - **Vehicle writes are admin-only.** `POST`, `PUT`, and `DELETE` on vehicles require the admin role. Browsing and purchasing need any signed-in user. Nothing in the inventory API is public.
 - **No `quantity` in `PUT`.** Stock only changes through `purchase` and `restock`. The update schema forbids extra fields, so a `quantity` in the body is a 422. Otherwise an admin saving a stale edit form could overwrite a sale that happened in the meantime.
 - **Atomic purchase.** A read-then-write ("load the car, check `quantity > 0`, save `quantity - 1`") races: two requests can both read 1, both pass the check, and both write 0, selling one car twice. Purchase is instead a single statement, `UPDATE vehicles SET quantity = quantity - :n WHERE id = :id AND quantity >= :n RETURNING ...`. PostgreSQL locks the row, and a competing update re-checks the `WHERE` clause after the lock is released, so exactly one of two buyers of the last unit gets a row back and the other gets 409. If no row comes back, a second lookup decides between 404 (no such car) and 409 (not enough stock). Restock is an atomic increment for the same reason. The `quantity >= 0` CHECK constraint on the table is a second line of defence.
-- **Cart checkout is all-or-nothing.** The cart itself lives in the browser (no server-side cart table to keep in sync), and `POST /api/cart/checkout` runs every line's conditional decrement in one transaction, in ascending vehicle id order so two concurrent checkouts lock rows in the same order and cannot deadlock. If any line is short or missing, the whole transaction rolls back and the response names the car, so a customer never ends up with half an order.
 - **`/search` is registered before `/{id}`.** Routes match in registration order; if `/{vehicle_id}` came first, `GET /api/vehicles/search` would try to parse `search` as an integer id and return 422. A test pins the order.
 - **Filters live in the URL.** Make, model, category, and price bounds are query parameters of the dashboard, not component state. Views survive a refresh, work with back/forward, and can be shared. Make and model are debounced by 300 ms before they are written to the URL.
 - **Token in `localStorage`.** The SPA and the API are separate origins, and a bearer header avoids cross-site cookie configuration (`SameSite=None`, `Secure`, CSRF protection). The cost is that any XSS bug can read the token. Mitigations: React escapes rendered values, the app has no `dangerouslySetInnerHTML`, tokens expire after 60 minutes, and a 401 clears the stored token. An `httpOnly`, secure cookie would remove the token from JavaScript's reach, but needs credentialed CORS and CSRF protection, or serving the SPA and API from one site.
@@ -365,10 +362,6 @@ A sold-out vehicle:
 
 ![Sold-out vehicle](docs/screenshots/sold-out.png)
 
-Shopping cart with all-or-nothing checkout:
-
-![Cart drawer](docs/screenshots/cart.png)
-
 Admin edit modal (no quantity field; stock changes only through purchase and restock):
 
 ![Admin modal](docs/screenshots/admin-modal.png)
@@ -384,7 +377,7 @@ I built this with several AI tools and kept the TDD rules in `AGENTS.md` for all
 - **Claude (Claude Code desktop app)** planned the build order, drafted the prompts for Codex, wrote `AGENTS.md` and the `.codex/agents` config, installed and configured PostgreSQL, diagnosed a psycopg/libpq import error, and checked Codex's commits.
 - **OpenAI Codex (desktop app, GPT-6 Sol)** wrote the first part of the code in red/green commits: the skeleton, registration, login/JWT and the first vehicle tests, plus the first version of the frontend. Its `test-runner` sub-agent (GPT-6 Luna) ran the tests, and its `reviewer` sub-agent caught the PostgreSQL 18 Docker volume path and a malformed-email validation gap. The backend and frontend were built in parallel against a written API contract.
 - **Google Antigravity** took over when the Claude usage limit was hit, and built vehicle listing, search, update and delete.
-- **Claude Code (Opus 5.5) as orchestrator** finished the project. Sonnet sub-agents wrote purchase/restock, the admin scripts, the admin UI and design pass, the cart with atomic checkout, and the README draft. Opus verified each red/green pair by replaying the red commit, ran the tests itself, and did the end-to-end browser walkthrough and the deployment. Sonnet reviewers found real bugs: a 500 and an account-existence leak on overlong login passwords, unescaped search wildcards, double purchases across cards, and search errors wiping the grid. Each was fixed test-first.
+- **Claude Code (Opus 5.5) as orchestrator** finished the project. Sonnet sub-agents wrote purchase/restock, the admin scripts, the admin UI and design pass, a shopping cart with atomic checkout (later removed as out of scope for an inventory system), and the README draft. Opus verified each red/green pair by replaying the red commit, ran the tests itself, and did the end-to-end browser walkthrough and the deployment. Sonnet reviewers found real bugs: a 500 and an account-existence leak on overlong login passwords, unescaped search wildcards, double purchases across cards, and search errors wiping the grid. Each was fixed test-first.
 - **My part:** I set the requirements and order of work, and made the product calls (cart design, Wikimedia photos, deploying to my own server). I reported the price-filter bug, created the Cloudflare tunnel, and reviewed the results.
 
 What I learned: AI reviewers found bugs the AI writers missed, but the tools also made mistakes that only verification caught. Seeded photo URLs were malformed, one photo was picked by filename and turned out to be a number plate, one test was flaky under load, and one commit is missing its trailer. Re-running tests and checking commits myself mattered more than any single tool.

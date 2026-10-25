@@ -11,14 +11,11 @@ interface ModalProps {
   children: ReactNode;
   /** Use "alertdialog" for confirmations that interrupt the user. */
   role?: "dialog" | "alertdialog";
-  /** "drawer" docks to the right on desktop and fills the screen on phones. */
-  placement?: "center" | "drawer";
 }
 
 /** Accessible modal: portal, Escape to close, Tab trap, scroll lock, focus restore. */
-export function Modal({ title, onClose, children, role = "dialog", placement = "center" }: ModalProps) {
+export function Modal({ title, onClose, children, role = "dialog" }: ModalProps) {
   const titleId = useId();
-  const drawer = placement === "drawer";
   const panel = useRef<HTMLDivElement>(null);
   // Read while rendering, before any child with autoFocus has stolen focus from the opener.
   const [opener] = useState(() => document.activeElement as HTMLElement | null);
@@ -67,7 +64,7 @@ export function Modal({ title, onClose, children, role = "dialog", placement = "
 
   return createPortal(
     <div
-      className={`fixed inset-0 z-50 flex bg-stone-950/60 ${drawer ? "justify-end" : "items-end justify-center sm:items-center sm:p-4"}`}
+      className="fixed inset-0 z-50 flex items-end justify-center bg-stone-950/60 sm:items-center sm:p-4"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) onClose();
       }}
@@ -79,11 +76,7 @@ export function Modal({ title, onClose, children, role = "dialog", placement = "
         aria-labelledby={titleId}
         tabIndex={-1}
         onKeyDown={trapTab}
-        className={
-          drawer
-            ? "flex h-full w-full max-w-md flex-col bg-white p-6 shadow-2xl outline-none"
-            : "max-h-full w-full max-w-lg overflow-y-auto rounded-t-3xl bg-white p-6 shadow-2xl outline-none sm:rounded-2xl"
-        }
+        className="max-h-full w-full max-w-lg overflow-y-auto rounded-t-3xl bg-white p-6 shadow-2xl outline-none sm:rounded-2xl"
       >
         <div className="flex items-start justify-between gap-4">
           <h2 id={titleId} className="text-xl font-bold text-stone-950">

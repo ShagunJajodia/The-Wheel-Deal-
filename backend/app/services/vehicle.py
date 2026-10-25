@@ -1,11 +1,6 @@
 from sqlalchemy.orm import Session
 
-from app.core.errors import (
-    CheckoutOutOfStock,
-    CheckoutVehicleNotFound,
-    OutOfStock,
-    VehicleNotFound,
-)
+from app.core.errors import OutOfStock, VehicleNotFound
 from app.models.vehicle import Vehicle
 from app.repositories.vehicle import (
     add_vehicle,
@@ -18,12 +13,7 @@ from app.repositories.vehicle import (
     update_vehicle_data,
     vehicle_exists,
 )
-from app.schemas.vehicle import (
-    CartItem,
-    VehicleCreate,
-    VehicleSearchParams,
-    VehicleUpdate,
-)
+from app.schemas.vehicle import VehicleCreate, VehicleSearchParams, VehicleUpdate
 
 
 def create_vehicle(db: Session, data: VehicleCreate) -> Vehicle:
@@ -87,24 +77,3 @@ def restock_vehicle(db: Session, vehicle_id: int, quantity: int) -> Vehicle:
     db.commit()
     db.refresh(vehicle)
     return vehicle
-
-
-def checkout_cart(db: Session, items: list[CartItem]) -> list[Vehicle]:
-    """Buy every item or none: one transaction, rows locked in ascending id order."""
-    updated: dict[int, Vehicle] = {}
-    for item in sorted(items, key=lambda line: line.vehicle_id):
-        vehicle = decrement_stock(db, item.vehicle_id, item.quantity)
-        if vehicle is None:
-            missing = not vehicle_exists(db, item.vehicle_id)
-            current = None if missing else get_vehicle_by_id(db, item.vehicle_id)
-            label = f"{current.year} {current.make} {current.model}" if current else ""
-            db.rollback()
-            if missing:
-                raise CheckoutVehicleNotFound(item.vehicle_id)
-            raise CheckoutOutOfStock(label)
-        updated[item.vehicle_id] = vehicle
-    db.commit()
-    result = [updated[item.vehicle_id] for item in items]
-    for vehicle in result:
-        db.refresh(vehicle)
-    return result

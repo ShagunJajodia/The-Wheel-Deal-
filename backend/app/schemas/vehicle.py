@@ -72,24 +72,6 @@ class VehiclePurchase(BaseModel):
 
 
 MAX_VEHICLE_ID = 2_147_483_647  # Postgres INTEGER range
-MAX_CART_ITEMS = 20
-
-
-class CartItem(BaseModel):
-    vehicle_id: int = Field(ge=1, le=MAX_VEHICLE_ID)
-    quantity: int = Field(ge=1)
-
-
-class CartCheckout(BaseModel):
-    items: list[CartItem] = Field(min_length=1, max_length=MAX_CART_ITEMS)
-
-    @field_validator("items")
-    @classmethod
-    def reject_duplicate_vehicles(cls, items: list[CartItem]) -> list[CartItem]:
-        ids = [item.vehicle_id for item in items]
-        if len(ids) != len(set(ids)):
-            raise ValueError("duplicate vehicle_id in items")
-        return items
 
 
 class VehicleRestock(BaseModel):
@@ -110,10 +92,6 @@ class VehicleRead(BaseModel):
     description: str | None
     created_at: datetime
     updated_at: datetime
-
-
-class CartCheckoutResult(BaseModel):
-    items: list[VehicleRead]
 
 
 class VehicleSearchParams(BaseModel):
