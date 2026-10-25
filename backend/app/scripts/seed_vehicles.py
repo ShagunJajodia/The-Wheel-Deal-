@@ -2,19 +2,20 @@
 
 Run from backend/:  python -m app.scripts.seed_vehicles
 Safe to re-run: a car whose (make, model, year) already exists is skipped, except that a
-missing (NULL) image_url is backfilled; an existing image_url is never overwritten.
+missing (NULL) image_url or spec/location field is backfilled; a non-NULL value is never
+overwritten.
 """
 
 import sys
 from collections.abc import Sequence
 from decimal import Decimal
-from typing import NamedTuple
+from typing import Any, NamedTuple
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.db.session import SessionLocal
-from app.models.vehicle import Vehicle, VehicleCategory
+from app.models.vehicle import Drivetrain, FuelType, Vehicle, VehicleCategory
 from app.repositories.vehicle import add_vehicle
 from app.schemas.vehicle import VehicleCreate
 
@@ -97,6 +98,194 @@ IMAGE_URLS: dict[tuple[str, str], str] = {
     ),
 }
 
+# Showroom specs and stock location, keyed by (make, model).
+SPECS: dict[tuple[str, str], dict[str, Any]] = {
+    ("Maruti Suzuki", "Swift"): {
+        "fuel_type": FuelType.petrol,
+        "transmission": "5-speed manual",
+        "engine": "1197 cc, 3-cyl Z-series petrol",
+        "power": "80 bhp @ 5700 rpm",
+        "torque": "112 Nm @ 4300 rpm",
+        "drivetrain": Drivetrain.fwd,
+        "seats": 5,
+        "mileage": "24.8 km/l (ARAI)",
+        "color": "Lustre Blue",
+        "location": "Andheri West, Mumbai",
+    },
+    ("Hyundai", "i20"): {
+        "fuel_type": FuelType.petrol,
+        "transmission": "7-speed DCT",
+        "engine": "998 cc, 3-cyl turbo petrol",
+        "power": "118 bhp @ 6000 rpm",
+        "torque": "172 Nm @ 1500-4000 rpm",
+        "drivetrain": Drivetrain.fwd,
+        "seats": 5,
+        "mileage": "20.0 km/l (ARAI)",
+        "color": "Polar White",
+        "location": "Banjara Hills, Hyderabad",
+    },
+    ("Honda", "City"): {
+        "fuel_type": FuelType.petrol,
+        "transmission": "CVT automatic",
+        "engine": "1498 cc, 4-cyl i-VTEC petrol",
+        "power": "119 bhp @ 6600 rpm",
+        "torque": "145 Nm @ 4300 rpm",
+        "drivetrain": Drivetrain.fwd,
+        "seats": 5,
+        "mileage": "18.4 km/l (ARAI)",
+        "color": "Platinum White Pearl",
+        "location": "Vasant Kunj, New Delhi",
+    },
+    ("Skoda", "Slavia"): {
+        "fuel_type": FuelType.petrol,
+        "transmission": "6-speed automatic",
+        "engine": "999 cc, 3-cyl TSI turbo petrol",
+        "power": "114 bhp @ 5000 rpm",
+        "torque": "178 Nm @ 1750-4500 rpm",
+        "drivetrain": Drivetrain.fwd,
+        "seats": 5,
+        "mileage": "18.1 km/l (ARAI)",
+        "color": "Candy White",
+        "location": "Koregaon Park, Pune",
+    },
+    ("Hyundai", "Creta"): {
+        "fuel_type": FuelType.diesel,
+        "transmission": "6-speed manual",
+        "engine": "1493 cc, 4-cyl CRDi diesel",
+        "power": "114 bhp @ 4000 rpm",
+        "torque": "250 Nm @ 1500-2750 rpm",
+        "drivetrain": Drivetrain.fwd,
+        "seats": 5,
+        "mileage": "21.8 km/l (ARAI)",
+        "color": "Atlas White",
+        "location": "Koramangala, Bengaluru",
+    },
+    ("Mahindra", "Scorpio-N"): {
+        "fuel_type": FuelType.diesel,
+        "transmission": "6-speed manual",
+        "engine": "2198 cc, 4-cyl mHawk diesel",
+        "power": "172 bhp @ 3500 rpm",
+        "torque": "400 Nm @ 1750-2750 rpm",
+        "drivetrain": Drivetrain.four_wd,
+        "seats": 7,
+        "mileage": "15.4 km/l (claimed)",
+        "color": "Napoli Black",
+        "location": "Adyar, Chennai",
+    },
+    ("Toyota", "Innova Crysta"): {
+        "fuel_type": FuelType.diesel,
+        "transmission": "6-speed automatic",
+        "engine": "2393 cc, 4-cyl GD diesel",
+        "power": "148 bhp @ 3400 rpm",
+        "torque": "343 Nm @ 1400-2800 rpm",
+        "drivetrain": Drivetrain.rwd,
+        "seats": 7,
+        "mileage": "15.6 km/l (ARAI)",
+        "color": "Super White",
+        "location": "Salt Lake, Kolkata",
+    },
+    ("Kia", "Carens"): {
+        "fuel_type": FuelType.petrol,
+        "transmission": "6-speed manual",
+        "engine": "1497 cc, 4-cyl Smartstream petrol",
+        "power": "113 bhp @ 6300 rpm",
+        "torque": "144 Nm @ 4500 rpm",
+        "drivetrain": Drivetrain.fwd,
+        "seats": 7,
+        "mileage": "16.5 km/l (ARAI)",
+        "color": "Imperial Blue",
+        "location": "SG Highway, Ahmedabad",
+    },
+    ("BMW", "M2"): {
+        "fuel_type": FuelType.petrol,
+        "transmission": "8-speed M Steptronic",
+        "engine": "2993 cc, 6-cyl twin-turbo petrol",
+        "power": "473 bhp @ 6250 rpm",
+        "torque": "550 Nm @ 2650-5870 rpm",
+        "drivetrain": Drivetrain.rwd,
+        "seats": 4,
+        "mileage": "10.0 km/l (claimed)",
+        "color": "Zandvoort Blue",
+        "location": "Worli, Mumbai",
+    },
+    ("MINI", "Cooper S Convertible"): {
+        "fuel_type": FuelType.petrol,
+        "transmission": "7-speed Steptronic DCT",
+        "engine": "1998 cc, 4-cyl turbo petrol",
+        "power": "189 bhp @ 5000 rpm",
+        "torque": "280 Nm @ 1350-4600 rpm",
+        "drivetrain": Drivetrain.fwd,
+        "seats": 4,
+        "mileage": "14.0 km/l (claimed)",
+        "color": "Chili Red",
+        "location": "Park Street, Kolkata",
+    },
+    ("Toyota", "Hilux"): {
+        "fuel_type": FuelType.diesel,
+        "transmission": "6-speed automatic",
+        "engine": "2755 cc, 4-cyl diesel",
+        "power": "201 bhp @ 3400 rpm",
+        "torque": "500 Nm @ 1600-2800 rpm",
+        "drivetrain": Drivetrain.four_wd,
+        "seats": 5,
+        "mileage": "10.0 km/l (claimed)",
+        "color": "Super White",
+        "location": "Jubilee Hills, Hyderabad",
+    },
+    ("Isuzu", "D-Max V-Cross"): {
+        "fuel_type": FuelType.diesel,
+        "transmission": "6-speed automatic",
+        "engine": "2999 cc, 4-cyl turbo diesel",
+        "power": "188 bhp @ 3600 rpm",
+        "torque": "450 Nm @ 1600-2600 rpm",
+        "drivetrain": Drivetrain.four_wd,
+        "seats": 5,
+        "mileage": "11.5 km/l (claimed)",
+        "color": "Obsidian Grey",
+        "location": "Baner, Pune",
+    },
+    ("Tata", "Nexon EV"): {
+        "fuel_type": FuelType.electric,
+        "transmission": "Single-speed automatic",
+        "engine": "40.5 kWh battery, PMSM motor",
+        "power": "142 bhp (106 kW)",
+        "torque": "215 Nm",
+        "drivetrain": Drivetrain.fwd,
+        "seats": 5,
+        "mileage": "465 km range (ARAI)",
+        "color": "Daytona Grey",
+        "location": "Indiranagar, Bengaluru",
+    },
+    ("Tata", "Punch EV"): {
+        "fuel_type": FuelType.electric,
+        "transmission": "Single-speed automatic",
+        "engine": "35 kWh battery, PMSM motor",
+        "power": "120 bhp (90 kW)",
+        "torque": "190 Nm",
+        "drivetrain": Drivetrain.fwd,
+        "seats": 5,
+        "mileage": "421 km range (MIDC)",
+        "color": "Seaweed Green",
+        "location": "Dwarka, New Delhi",
+    },
+    ("MG", "ZS EV"): {
+        "fuel_type": FuelType.electric,
+        "transmission": "Single-speed automatic",
+        "engine": "50.3 kWh battery, PMSM motor",
+        "power": "174 bhp (130 kW)",
+        "torque": "280 Nm",
+        "drivetrain": Drivetrain.fwd,
+        "seats": 5,
+        "mileage": "461 km range (ARAI)",
+        "color": "Pristine White",
+        "location": "T. Nagar, Chennai",
+    },
+}
+SPEC_FIELDS = (
+    "fuel_type", "transmission", "engine", "power", "torque",
+    "drivetrain", "seats", "mileage", "color", "location",
+)
+
 
 def _car(
     make: str,
@@ -116,6 +305,7 @@ def _car(
         quantity=quantity,
         image_url=IMAGE_URLS[(make, model)],
         description=description,
+        **SPECS[(make, model)],
     )
 
 
@@ -159,6 +349,17 @@ class SeedResult(NamedTuple):
     backfilled: int = 0
 
 
+def _backfill(current: Vehicle, data: VehicleCreate) -> bool:
+    """Fill NULL image/spec fields from the seed data; never overwrite a non-NULL value."""
+    changed = False
+    for field in ("image_url", *SPEC_FIELDS):
+        wanted = getattr(data, field)
+        if getattr(current, field) is None and wanted is not None:
+            setattr(current, field, wanted)
+            changed = True
+    return changed
+
+
 def seed_vehicles(db: Session, vehicles: Sequence[VehicleCreate] = SEED_VEHICLES) -> SeedResult:
     existing = {
         (car.make, car.model, car.year): car for car in db.scalars(select(Vehicle))
@@ -168,8 +369,7 @@ def seed_vehicles(db: Session, vehicles: Sequence[VehicleCreate] = SEED_VEHICLES
         key = (data.make, data.model, data.year)
         current = existing.get(key)
         if current is not None:
-            if current.image_url is None and data.image_url is not None:
-                current.image_url = data.image_url
+            if _backfill(current, data):
                 backfilled += 1
             else:
                 skipped += 1

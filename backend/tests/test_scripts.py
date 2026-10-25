@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 
 from app.core.config import Settings
 from app.models.user import User, UserRole
-from app.models.vehicle import Vehicle, VehicleCategory
+from app.models.vehicle import Drivetrain, FuelType, Vehicle, VehicleCategory
 from app.schemas.user import UserCreate
 from app.schemas.vehicle import VehicleCreate
 from app.scripts import create_admin, seed_vehicles
@@ -210,6 +210,65 @@ def test_seed_vehicles_backfills_null_image_but_keeps_custom_image(db_session: S
     kept = db_session.scalars(select(Vehicle).where(Vehicle.model == custom_image.model)).one()
     assert filled.image_url == null_image.image_url
     assert kept.image_url == "https://example.com/mine.jpg"
+
+
+def test_seed_vehicles_gives_every_car_complete_specs_and_a_location(db_session: Session) -> None:
+    seed_vehicles.seed_vehicles(db_session)
+
+    cars = db_session.scalars(select(Vehicle)).all()
+    for car in cars:
+        for field in seed_vehicles.SPEC_FIELDS:
+            assert getattr(car, field) is not None, (car.model, field)
+        assert car.location and "," in car.location
+        assert car.seats is not None and 1 <= car.seats <= 12
+    cities = {car.location.rsplit(",", 1)[1].strip() for car in cars if car.location}
+    assert 6 <= len(cities) <= 8
+
+
+def test_seed_specs_are_consistent_with_each_car(db_session: Session) -> None:
+    seed_vehicles.seed_vehicles(db_session)
+
+    by_model = {car.model: car for car in db_session.scalars(select(Vehicle))}
+    for car in by_model.values():
+        assert (car.fuel_type == FuelType.electric) == (car.category == VehicleCategory.ev)
+        if car.fuel_type == FuelType.electric:
+            assert "kWh" in (car.engine or "")
+            assert "range" in (car.mileage or "")
+    assert by_model["M2"].drivetrain == Drivetrain.rwd
+    assert by_model["Hilux"].drivetrain == Drivetrain.four_wd
+    assert by_model["Nexon EV"].transmission == "Single-speed automatic"
+
+
+def test_seed_specs_cover_exactly_the_seed_cars() -> None:
+    assert set(seed_vehicles.SPECS) == {(car.make, car.model) for car in seed_vehicles.SEED_VEHICLES}
+
+
+def test_seed_vehicles_backfills_null_specs_but_never_overwrites_values(
+    db_session: Session,
+) -> None:
+    template = seed_vehicles.SEED_VEHICLES[0]
+    db_session.add(
+        Vehicle(
+            **{
+                **template.model_dump(),
+                "location": None,
+                "engine": None,
+                "color": "Custom Pink",
+                "seats": 4,
+            }
+        )
+    )
+    db_session.commit()
+
+    result = seed_vehicles.seed_vehicles(db_session)
+
+    assert (result.backfilled, result.skipped) == (1, 0)
+    db_session.expire_all()
+    car = db_session.scalars(select(Vehicle).where(Vehicle.model == template.model)).one()
+    assert car.location == template.location
+    assert car.engine == template.engine
+    assert car.color == "Custom Pink"
+    assert car.seats == 4
 
 
 def test_seed_vehicles_ignores_duplicates_within_the_input(db_session: Session) -> None:
