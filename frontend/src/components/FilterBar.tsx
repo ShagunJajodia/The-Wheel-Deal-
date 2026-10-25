@@ -2,6 +2,14 @@ import { useEffect, useId, useRef, useState } from "react";
 import { useSearchParams } from "react-router";
 import { CATEGORIES } from "../api/client";
 import { priceRangeError } from "../lib/filters";
+import { formatINR } from "../lib/format";
+
+/** Echoes a typed price in rupees (prices are whole INR, not lakhs) so the unit is obvious. */
+function PriceEcho({ value }: { value: string }) {
+  const amount = Number(value);
+  if (value.trim() === "" || !Number.isFinite(amount)) return null;
+  return <span className="mt-1 block text-xs font-normal text-stone-500">{formatINR(amount)}</span>;
+}
 
 interface FilterBarProps {
   /** Below md the filters live in a drawer; this opens it. Ignored from md up. */
@@ -31,9 +39,12 @@ export function FilterBar({ open = false, onClose = () => undefined }: FilterBar
   useEffect(() => {
     if (!pending.current) return;
     const timer = window.setTimeout(() => {
+      // An empty range (e.g. a half-typed max below min) stays local: the inline hint explains it,
+      // and the URL keeps the last valid prices so the results don't vanish mid-typing.
+      const prices = priceRangeError(minPrice, maxPrice) ? [] : [["min_price", minPrice], ["max_price", maxPrice]];
       setParams((previous) => {
         const next = new URLSearchParams(previous);
-        for (const [key, value] of [["make", make], ["model", model], ["min_price", minPrice], ["max_price", maxPrice]]) {
+        for (const [key, value] of [["make", make], ["model", model], ...prices]) {
           if (value.trim()) next.set(key, value.trim()); else next.delete(key);
         }
         return next;
@@ -111,8 +122,8 @@ export function FilterBar({ open = false, onClose = () => undefined }: FilterBar
         <div className="grid gap-4 md:grid-cols-4">
           <label className={label}>Make<input aria-label="Make" value={make} onChange={(event) => { pending.current = true; setMake(event.target.value); }} placeholder="e.g. Tata" className="input mt-1.5 font-normal" /></label>
           <label className={label}>Model<input aria-label="Model" value={model} onChange={(event) => { pending.current = true; setModel(event.target.value); }} placeholder="e.g. Nexon" className="input mt-1.5 font-normal" /></label>
-          <label className={label}>Min price<input aria-label="Min price" type="number" inputMode="numeric" min="0" value={minPrice} onChange={(event) => { pending.current = true; setMinPrice(event.target.value); }} aria-invalid={rangeError ? "true" : undefined} aria-describedby={rangeError ? rangeErrorId : undefined} placeholder="₹ Min" className="input mt-1.5 font-normal" /></label>
-          <label className={label}>Max price<input aria-label="Max price" type="number" inputMode="numeric" min="0" value={maxPrice} onChange={(event) => { pending.current = true; setMaxPrice(event.target.value); }} aria-invalid={rangeError ? "true" : undefined} aria-describedby={rangeError ? rangeErrorId : undefined} placeholder="₹ Max" className="input mt-1.5 font-normal" /></label>
+          <label className={label}>Min price<input aria-label="Min price" type="number" inputMode="numeric" min="0" value={minPrice} onChange={(event) => { pending.current = true; setMinPrice(event.target.value); }} aria-invalid={rangeError ? "true" : undefined} aria-describedby={rangeError ? rangeErrorId : undefined} placeholder="₹ Min" className="input mt-1.5 font-normal" /><PriceEcho value={minPrice} /></label>
+          <label className={label}>Max price<input aria-label="Max price" type="number" inputMode="numeric" min="0" value={maxPrice} onChange={(event) => { pending.current = true; setMaxPrice(event.target.value); }} aria-invalid={rangeError ? "true" : undefined} aria-describedby={rangeError ? rangeErrorId : undefined} placeholder="₹ Max" className="input mt-1.5 font-normal" /><PriceEcho value={maxPrice} /></label>
           {rangeError && <p id={rangeErrorId} role="alert" className="text-sm text-red-600 md:col-span-4">{rangeError}</p>}
         </div>
         <div className="flex flex-wrap gap-2 md:mt-5" role="group" aria-label="Categories">
