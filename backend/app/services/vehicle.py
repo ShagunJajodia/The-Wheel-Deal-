@@ -2,8 +2,13 @@ from sqlalchemy.orm import Session
 
 from app.core.errors import VehicleNotFound
 from app.models.vehicle import Vehicle
-from app.repositories.vehicle import add_vehicle, get_vehicle_by_id, list_vehicles
-from app.schemas.vehicle import VehicleCreate
+from app.repositories.vehicle import (
+    add_vehicle,
+    get_vehicle_by_id,
+    list_vehicles,
+    search_vehicles,
+)
+from app.schemas.vehicle import VehicleCreate, VehicleSearchParams
 
 
 def create_vehicle(db: Session, data: VehicleCreate) -> Vehicle:
@@ -22,3 +27,14 @@ def get_vehicle(db: Session, vehicle_id: int) -> Vehicle:
 
 def get_vehicles(db: Session) -> list[Vehicle]:
     return list_vehicles(db)
+
+
+def find_vehicles(db: Session, params: VehicleSearchParams) -> list[Vehicle]:
+    return search_vehicles(
+        db,
+        make=params.make,
+        model=params.model,
+        category=params.category,
+        min_price=params.min_price,
+        max_price=params.max_price,
+    )

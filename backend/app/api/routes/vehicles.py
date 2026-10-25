@@ -1,13 +1,18 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.orm import Session
 
 from app.api.dependencies import get_current_user, require_admin
 from app.db.session import get_db
 from app.models.user import User
-from app.schemas.vehicle import VehicleCreate, VehicleRead
-from app.services.vehicle import create_vehicle, get_vehicle, get_vehicles
+from app.schemas.vehicle import VehicleCreate, VehicleRead, VehicleSearchParams
+from app.services.vehicle import (
+    create_vehicle,
+    find_vehicles,
+    get_vehicle,
+    get_vehicles,
+)
 
 router = APIRouter()
 
@@ -27,6 +32,15 @@ def list_all(
     _user: Annotated[User, Depends(get_current_user)],
 ) -> list[VehicleRead]:
     return get_vehicles(db)
+
+
+@router.get("/search", response_model=list[VehicleRead])
+def search(
+    params: Annotated[VehicleSearchParams, Query()],
+    db: Annotated[Session, Depends(get_db)],
+    _user: Annotated[User, Depends(get_current_user)],
+) -> list[VehicleRead]:
+    return find_vehicles(db, params)
 
 
 @router.get("/{vehicle_id}", response_model=VehicleRead)
