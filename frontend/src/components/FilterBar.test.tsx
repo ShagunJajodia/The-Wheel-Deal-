@@ -83,6 +83,74 @@ describe("FilterBar", () => {
     expect(screen.getByTestId("query").textContent).toBe("");
   });
 
+  it("debounces the price inputs like make and model", () => {
+    vi.useFakeTimers();
+    render(
+      <MemoryRouter>
+        <FilterBar />
+        <QueryProbe />
+      </MemoryRouter>,
+    );
+    const query = () => new URLSearchParams(screen.getByTestId("query").textContent ?? "");
+
+    fireEvent.change(screen.getByLabelText("Min price"), { target: { value: "5" } });
+    fireEvent.change(screen.getByLabelText("Min price"), { target: { value: "50" } });
+    fireEvent.change(screen.getByLabelText("Min price"), { target: { value: "500" } });
+    fireEvent.change(screen.getByLabelText("Max price"), { target: { value: "9000" } });
+
+    expect((screen.getByLabelText("Min price") as HTMLInputElement).value).toBe("500");
+    expect(query().get("min_price")).toBeNull();
+    expect(query().get("max_price")).toBeNull();
+
+    act(() => vi.advanceTimersByTime(299));
+    expect(query().get("min_price")).toBeNull();
+
+    act(() => vi.advanceTimersByTime(1));
+    expect(query().get("min_price")).toBe("500");
+    expect(query().get("max_price")).toBe("9000");
+  });
+
+  it("warns inline when min price is above max price", () => {
+    vi.useFakeTimers();
+    render(
+      <MemoryRouter>
+        <FilterBar />
+      </MemoryRouter>,
+    );
+    const min = screen.getByLabelText("Min price");
+    const max = screen.getByLabelText("Max price");
+    expect(screen.queryByText(/min price must not be higher than max price/i)).toBeNull();
+
+    fireEvent.change(min, { target: { value: "900" } });
+    fireEvent.change(max, { target: { value: "100" } });
+
+    const hint = screen.getByText(/min price must not be higher than max price/i);
+    expect(min.getAttribute("aria-invalid")).toBe("true");
+    expect(max.getAttribute("aria-invalid")).toBe("true");
+    expect(document.getElementById(min.getAttribute("aria-describedby") ?? "")).toBe(hint);
+    expect(document.getElementById(max.getAttribute("aria-describedby") ?? "")).toBe(hint);
+
+    fireEvent.change(max, { target: { value: "1000" } });
+
+    expect(screen.queryByText(/min price must not be higher than max price/i)).toBeNull();
+    expect(min.getAttribute("aria-invalid")).not.toBe("true");
+  });
+
+  it("empties the price inputs when filters are cleared elsewhere", () => {
+    render(
+      <MemoryRouter initialEntries={["/?min_price=100&max_price=900"]}>
+        <FilterBar />
+        <ClearFromOutside />
+      </MemoryRouter>,
+    );
+    expect((screen.getByLabelText("Min price") as HTMLInputElement).value).toBe("100");
+
+    fireEvent.click(screen.getByRole("button", { name: "Clear from outside" }));
+
+    expect((screen.getByLabelText("Min price") as HTMLInputElement).value).toBe("");
+    expect((screen.getByLabelText("Max price") as HTMLInputElement).value).toBe("");
+  });
+
   it("disables Clear all when no filter is active", () => {
     render(
       <MemoryRouter>
