@@ -1,5 +1,7 @@
+import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import text
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 
@@ -94,3 +96,13 @@ def test_create_validates_category_price_and_quantity(
     ):
         response = client.post("/api/vehicles", headers=headers, json=vehicle_payload(**overrides))
         assert response.status_code == 422
+
+
+def test_quantity_is_checked_by_postgres(db_session: Session) -> None:
+    with pytest.raises(IntegrityError), db_session.begin_nested():
+        db_session.execute(
+            text(
+                "INSERT INTO vehicles (make, model, year, category, price, quantity) "
+                "VALUES ('Tata', 'Nexon', 2025, 'suv', 1250000.00, -1)"
+            )
+        )

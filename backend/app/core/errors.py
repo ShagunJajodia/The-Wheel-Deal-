@@ -16,3 +16,7 @@ class AuthenticationRequired(DomainError):
 
 class AdminRequired(DomainError):
     pass
+
+
+class VehicleNotFound(DomainError):
+    pass

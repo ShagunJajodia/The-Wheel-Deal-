@@ -7,6 +7,7 @@ from app.core.errors import (
     DomainError,
     EmailAlreadyRegistered,
     InvalidCredentials,
+    VehicleNotFound,
 )
 
 
@@ -19,4 +20,6 @@ async def handle_domain_error(_request: Request, exc: DomainError) -> JSONRespon
         return JSONResponse(status_code=401, content={"detail": "Authentication required"})
     if isinstance(exc, AdminRequired):
         return JSONResponse(status_code=403, content={"detail": "Admin access required"})
+    if isinstance(exc, VehicleNotFound):
+        return JSONResponse(status_code=404, content={"detail": "Vehicle not found"})
     return JSONResponse(status_code=400, content={"detail": "Invalid request"})

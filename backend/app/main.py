@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api.exception_handlers import handle_domain_error
 from app.api.routes.auth import router as auth_router
 from app.api.routes.health import router as health_router
+from app.api.routes.vehicles import router as vehicles_router
 from app.core.config import get_settings
 from app.core.errors import DomainError
 
@@ -18,3 +19,4 @@ app.add_middleware(
 app.add_exception_handler(DomainError, handle_domain_error)
 app.include_router(auth_router, prefix="/api/auth")
 app.include_router(health_router, prefix="/api")
+app.include_router(vehicles_router, prefix="/api/vehicles")

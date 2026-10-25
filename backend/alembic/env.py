@@ -2,15 +2,16 @@ from logging.config import fileConfig
 
 from sqlalchemy import create_engine, pool
 
+import app.models  # noqa: F401
 from alembic import context
 from app.core.config import get_settings
-from app.models import User
+from app.db.base import Base
 
 config = context.config
 if config.config_file_name is not None and config.get_section("loggers"):
     fileConfig(config.config_file_name)
 
-target_metadata = User.metadata
+target_metadata = Base.metadata
 
 
 def run_migrations_offline() -> None:
