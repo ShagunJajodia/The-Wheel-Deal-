@@ -22,62 +22,77 @@ from app.schemas.vehicle import VehicleCreate
 IMAGE_URLS: dict[tuple[str, str], str] = {
     ("MG", "ZS EV"): (
         "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b9/"
+        "MG_ZS_EV_Facelift_1X7A5867.jpg/"
         "960px-MG_ZS_EV_Facelift_1X7A5867.jpg"
     ),
     ("Tata", "Punch EV"): (
         "https://upload.wikimedia.org/wikipedia/commons/thumb/0/04/"
+        "Tata_punch.ev.jpg/"
         "960px-Tata_punch.ev.jpg"
     ),
     ("Tata", "Nexon EV"): (
         "https://upload.wikimedia.org/wikipedia/commons/thumb/0/04/"
+        "Tata_Nexon_EV_in_Hyderabad_01.jpg/"
         "960px-Tata_Nexon_EV_in_Hyderabad_01.jpg"
     ),
     ("Isuzu", "D-Max V-Cross"): (
         "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/"
+        "2023_Isuzu_D-Max_V-Cross_4-Door_3.0_Ddi_M.jpg/"
         "960px-2023_Isuzu_D-Max_V-Cross_4-Door_3.0_Ddi_M.jpg"
     ),
     ("Toyota", "Hilux"): (
         "https://upload.wikimedia.org/wikipedia/commons/thumb/8/81/"
+        "Toyota_HiLux_GR_Sport_1X7A7281.jpg/"
         "960px-Toyota_HiLux_GR_Sport_1X7A7281.jpg"
     ),
     ("MINI", "Cooper S Convertible"): (
         "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/"
+        "Mini_Cabrio_%28F67%29_JCW-Trim_DSC_7514.jpg/"
         "960px-Mini_Cabrio_%28F67%29_JCW-Trim_DSC_7514.jpg"
     ),
     ("BMW", "M2"): (
         "https://upload.wikimedia.org/wikipedia/commons/thumb/1/16/"
+        "BMW_G87_M2_1X7A1837.jpg/"
         "960px-BMW_G87_M2_1X7A1837.jpg"
     ),
     ("Kia", "Carens"): (
         "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b6/"
+        "Kia_Carens_2024_Model.jpg/"
         "960px-Kia_Carens_2024_Model.jpg"
     ),
     ("Toyota", "Innova Crysta"): (
         "https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/"
+        "Toyota_Innova_Crysta_2.4_Z_front_right.jpg/"
         "960px-Toyota_Innova_Crysta_2.4_Z_front_right.jpg"
     ),
     ("Mahindra", "Scorpio-N"): (
         "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/"
+        "2024_Mahindra_Scorpio_Z8L_front.jpg/"
         "960px-2024_Mahindra_Scorpio_Z8L_front.jpg"
     ),
     ("Hyundai", "Creta"): (
         "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a0/"
+        "2024_Hyundai_Creta_Alpha.jpg/"
         "960px-2024_Hyundai_Creta_Alpha.jpg"
     ),
     ("Skoda", "Slavia"): (
         "https://upload.wikimedia.org/wikipedia/commons/thumb/9/92/"
+        "2021_%C5%A0koda_Slavia_1.5_TSI_Style_%28India%29_front_view.png/"
         "960px-2021_%C5%A0koda_Slavia_1.5_TSI_Style_%28India%29_front_view.png"
     ),
     ("Honda", "City"): (
         "https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/"
+        "2023_Honda_City_RS.jpg/"
         "960px-2023_Honda_City_RS.jpg"
     ),
     ("Hyundai", "i20"): (
         "https://upload.wikimedia.org/wikipedia/commons/thumb/1/13/"
+        "Hyundai_i20_%28BC3%29_Facelift_1X7A1941.jpg/"
         "960px-Hyundai_i20_%28BC3%29_Facelift_1X7A1941.jpg"
     ),
     ("Maruti Suzuki", "Swift"): (
         "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e7/"
+        "2024_Suzuki_Swift.jpg/"
         "960px-2024_Suzuki_Swift.jpg"
     ),
 }
