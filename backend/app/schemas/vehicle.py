@@ -1,9 +1,16 @@
 from datetime import date, datetime
 from decimal import Decimal
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    computed_field,
+    field_validator,
+    model_validator,
+)
 
-from app.models.vehicle import VehicleCategory
+from app.models.vehicle import Drivetrain, FuelType, VehicleCategory
 
 MIN_VEHICLE_YEAR = 1886  # first production automobile
 NON_NULLABLE_UPDATE_FIELDS = frozenset({"make", "model", "year", "category", "price"})
@@ -25,6 +32,16 @@ class VehicleCreate(BaseModel):
     quantity: int = Field(ge=0)
     image_url: str | None = Field(default=None, max_length=2048)
     description: str | None = None
+    fuel_type: FuelType | None = None
+    transmission: str | None = Field(default=None, min_length=1, max_length=50)
+    engine: str | None = Field(default=None, min_length=1, max_length=100)
+    power: str | None = Field(default=None, min_length=1, max_length=50)
+    torque: str | None = Field(default=None, min_length=1, max_length=50)
+    drivetrain: Drivetrain | None = None
+    seats: int | None = Field(default=None, ge=1, le=12)
+    mileage: str | None = Field(default=None, min_length=1, max_length=50)
+    color: str | None = Field(default=None, min_length=1, max_length=50)
+    location: str | None = Field(default=None, min_length=1, max_length=100)
 
     @field_validator("year")
     @classmethod
@@ -43,6 +60,16 @@ class VehicleUpdate(BaseModel):
     price: Decimal | None = Field(default=None, gt=0, max_digits=10, decimal_places=2)
     image_url: str | None = Field(default=None, max_length=2048)
     description: str | None = None
+    fuel_type: FuelType | None = None
+    transmission: str | None = Field(default=None, min_length=1, max_length=50)
+    engine: str | None = Field(default=None, min_length=1, max_length=100)
+    power: str | None = Field(default=None, min_length=1, max_length=50)
+    torque: str | None = Field(default=None, min_length=1, max_length=50)
+    drivetrain: Drivetrain | None = None
+    seats: int | None = Field(default=None, ge=1, le=12)
+    mileage: str | None = Field(default=None, min_length=1, max_length=50)
+    color: str | None = Field(default=None, min_length=1, max_length=50)
+    location: str | None = Field(default=None, min_length=1, max_length=100)
 
     @field_validator("year")
     @classmethod
@@ -90,8 +117,23 @@ class VehicleRead(BaseModel):
     quantity: int
     image_url: str | None
     description: str | None
+    fuel_type: FuelType | None
+    transmission: str | None
+    engine: str | None
+    power: str | None
+    torque: str | None
+    drivetrain: Drivetrain | None
+    seats: int | None
+    mileage: str | None
+    color: str | None
+    location: str | None
     created_at: datetime
     updated_at: datetime
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def stock_id(self) -> str:
+        return f"WD-{self.id:05d}"
 
 
 class VehicleSearchParams(BaseModel):

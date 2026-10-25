@@ -63,8 +63,8 @@ def test_get_list_and_detail_include_specs_and_stock_id(
 ) -> None:
     created = create_vehicle(client, admin_token, **SPECS)
 
-    detail = client.get(f"/api/vehicles/{created['id']}").json()
-    listing = next(v for v in client.get("/api/vehicles").json() if v["id"] == created["id"])
+    detail = client.get(f"/api/vehicles/{created['id']}", headers=auth(admin_token)).json()
+    listing = next(v for v in client.get("/api/vehicles", headers=auth(admin_token)).json() if v["id"] == created["id"])
 
     for body in (detail, listing):
         assert body["stock_id"] == f"WD-{created['id']:05d}"
@@ -162,7 +162,7 @@ def test_put_rejects_invalid_spec_values(
     )
 
     assert response.status_code == 422
-    assert client.get(f"/api/vehicles/{created['id']}").json()[field] == SPECS[field]
+    assert client.get(f"/api/vehicles/{created['id']}", headers=auth(admin_token)).json()[field] == SPECS[field]
 
 
 @pytest.mark.parametrize("value", [1, 12])
@@ -183,7 +183,7 @@ def test_put_rejects_stock_id_and_quantity(
     )
 
     assert response.status_code == 422
-    after = client.get(f"/api/vehicles/{created['id']}").json()
+    after = client.get(f"/api/vehicles/{created['id']}", headers=auth(admin_token)).json()
     assert after["stock_id"] == created["stock_id"]
     assert after["quantity"] == 2
     assert after["color"] is None

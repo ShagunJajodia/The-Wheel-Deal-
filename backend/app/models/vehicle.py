@@ -20,6 +20,21 @@ class VehicleCategory(str, Enum):
     ev = "ev"
 
 
+class FuelType(str, Enum):
+    petrol = "petrol"
+    diesel = "diesel"
+    electric = "electric"
+    hybrid = "hybrid"
+    cng = "cng"
+
+
+class Drivetrain(str, Enum):
+    fwd = "fwd"
+    rwd = "rwd"
+    awd = "awd"
+    four_wd = "4wd"
+
+
 class Vehicle(Base):
     __tablename__ = "vehicles"
 
@@ -34,6 +49,18 @@ class Vehicle(Base):
     quantity: Mapped[int] = mapped_column(Integer, nullable=False)
     image_url: Mapped[str | None] = mapped_column(String(2048))
     description: Mapped[str | None] = mapped_column(Text)
+    fuel_type: Mapped[FuelType | None] = mapped_column(SAEnum(FuelType, name="vehicle_fuel_type"))
+    transmission: Mapped[str | None] = mapped_column(String(50))
+    engine: Mapped[str | None] = mapped_column(String(100))
+    power: Mapped[str | None] = mapped_column(String(50))
+    torque: Mapped[str | None] = mapped_column(String(50))
+    drivetrain: Mapped[Drivetrain | None] = mapped_column(
+        SAEnum(Drivetrain, name="vehicle_drivetrain", values_callable=lambda e: [m.value for m in e])
+    )
+    seats: Mapped[int | None] = mapped_column(Integer)
+    mileage: Mapped[str | None] = mapped_column(String(50))
+    color: Mapped[str | None] = mapped_column(String(50))
+    location: Mapped[str | None] = mapped_column(String(100))
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, server_default=func.now()
     )
