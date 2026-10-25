@@ -1,4 +1,5 @@
 fastapi
+uvicorn[standard]
 SQLAlchemy>=2,<3
 alembic
 psycopg[binary]>=3,<4

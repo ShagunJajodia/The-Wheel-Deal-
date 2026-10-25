@@ -1,0 +1,15 @@
+model = "gpt-6.1-sol"
+model_reasoning_effort = "medium"
+
+[agents]
+max_concurrent_threads_per_session = 3
+default_subagent_model = "gpt-6-luna"
+default_subagent_reasoning_effort = "low"
+
+[agents.test-runner]
+description = "Runs tests, ruff and coverage and reports only what matters. Never edits files."
+config_file = "agents/test-runner.toml"
+
+[agents.reviewer]
+description = "Reviews the latest TDD cycles against AGENTS.md. Read-only."
+config_file = "agents/reviewer.toml"
